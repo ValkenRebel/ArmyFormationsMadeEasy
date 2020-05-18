@@ -484,6 +484,6 @@ namespace ArmyFormationsMadeEasy.Patches
             LightCavalryStartPosFwdOffset = lightCavalryStartPosFwdOffset;
             HeavyCavalryStartPosLateralOffset = heavyCavalryStartPosLateralOffset;
             HeavyCavalryStartPosFwdOffset = heavyCavalryStartPosFwdOffset;
-    }
+        }
     }
 }
