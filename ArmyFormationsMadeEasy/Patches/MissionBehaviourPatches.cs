@@ -130,25 +130,33 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormation customArmyFormation00 = new CustomArmyFormation(0,
                                                                                 Settings.Instance.CustomArmyFormation00Enabled, 
                                                                                 Settings.Instance.CustomArmyFormation00InfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00InfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00RangedArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00RangedFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00RangedStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00RangedStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation00CavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00CavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00CavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00CavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation00HorseArcherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00HorseArcherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00HorseArcherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00HorseArcherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation00SkirmisherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00SkirmisherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00SkirmisherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00SkirmisherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation00HeavyInfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00HeavyInfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00HeavyInfantryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00HeavyInfantryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation00LightCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00LightCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00LightCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00LightCavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation00HeavyCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation00HeavyCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation00HeavyCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation00HeavyCavalryStartPosFwdOffset
                                                                                 );
@@ -157,25 +165,33 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormation customArmyFormation01 = new CustomArmyFormation(1,
                                                                                 Settings.Instance.CustomArmyFormation01Enabled,
                                                                                 Settings.Instance.CustomArmyFormation01InfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01InfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01RangedArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01RangedFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01RangedStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01RangedStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation01CavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01CavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01CavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01CavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation01HorseArcherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01HorseArcherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01HorseArcherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01HorseArcherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation01SkirmisherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01SkirmisherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01SkirmisherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01SkirmisherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation01HeavyInfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01HeavyInfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01HeavyInfantryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01HeavyInfantryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation01LightCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01LightCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01LightCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01LightCavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation01HeavyCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation01HeavyCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation01HeavyCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation01HeavyCavalryStartPosFwdOffset
                                                                                 );
@@ -184,25 +200,33 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormation customArmyFormation02 = new CustomArmyFormation(2,
                                                                                 Settings.Instance.CustomArmyFormation02Enabled,
                                                                                 Settings.Instance.CustomArmyFormation02InfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02InfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02RangedArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02RangedFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02RangedStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02RangedStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation02CavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02CavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02CavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02CavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation02HorseArcherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02HorseArcherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02HorseArcherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02HorseArcherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation02SkirmisherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02SkirmisherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02SkirmisherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02SkirmisherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation02HeavyInfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02HeavyInfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02HeavyInfantryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02HeavyInfantryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation02LightCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02LightCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02LightCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02LightCavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation02HeavyCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation02HeavyCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation02HeavyCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation02HeavyCavalryStartPosFwdOffset
                                                                                 );
@@ -211,25 +235,33 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormation customArmyFormation03 = new CustomArmyFormation(3,
                                                                                 Settings.Instance.CustomArmyFormation03Enabled,
                                                                                 Settings.Instance.CustomArmyFormation03InfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03InfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03RangedArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03RangedFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03RangedStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03RangedStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation03CavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03CavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03CavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03CavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation03HorseArcherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03HorseArcherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03HorseArcherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03HorseArcherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation03SkirmisherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03SkirmisherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03SkirmisherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03SkirmisherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation03HeavyInfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03HeavyInfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03HeavyInfantryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03HeavyInfantryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation03LightCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03LightCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03LightCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03LightCavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation03HeavyCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation03HeavyCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation03HeavyCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation03HeavyCavalryStartPosFwdOffset
                                                                                 );
@@ -238,25 +270,33 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormation customArmyFormation04 = new CustomArmyFormation(4,
                                                                                 Settings.Instance.CustomArmyFormation04Enabled,
                                                                                 Settings.Instance.CustomArmyFormation04InfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04InfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04RangedArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04RangedFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04RangedStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04RangedStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation04CavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04CavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04CavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04CavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation04HorseArcherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04HorseArcherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04HorseArcherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04HorseArcherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation04SkirmisherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04SkirmisherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04SkirmisherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04SkirmisherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation04HeavyInfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04HeavyInfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04HeavyInfantryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04HeavyInfantryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation04LightCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04LightCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04LightCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04LightCavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation04HeavyCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation04HeavyCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation04HeavyCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation04HeavyCavalryStartPosFwdOffset
                                                                                 );
@@ -265,25 +305,33 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormation customArmyFormation05 = new CustomArmyFormation(5,
                                                                                 Settings.Instance.CustomArmyFormation05Enabled,
                                                                                 Settings.Instance.CustomArmyFormation05InfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05InfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05RangedArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05RangedFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05RangedStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05RangedStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation05CavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05CavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05CavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05CavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation05HorseArcherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05HorseArcherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05HorseArcherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05HorseArcherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation05SkirmisherArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05SkirmisherFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05SkirmisherStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05SkirmisherStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation05HeavyInfantryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05HeavyInfantryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05HeavyInfantryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05HeavyInfantryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation05LightCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05LightCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05LightCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05LightCavalryStartPosFwdOffset,
                                                                                 Settings.Instance.CustomArmyFormation05HeavyCavalryArrangementOrder,
+                                                                                Settings.Instance.CustomArmyFormation05HeavyCavalryFormOrder,
                                                                                 Settings.Instance.CustomArmyFormation05HeavyCavalryStartPosLateralOffset,
                                                                                 Settings.Instance.CustomArmyFormation05HeavyCavalryStartPosFwdOffset
                                                                                 );
@@ -395,73 +443,97 @@ namespace ArmyFormationsMadeEasy.Patches
                             // Halt the MainFormation & move each formation in Army to a position relative to MainFormation's new position (default Infantry)
                             if (formation == team.Formations.First())
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.InfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.InfantryArrangementOrder;
-                                
-                                // Give Move order to MainFormation to halt in current position.
+
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.InfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.InfantryFormOrder;
+
+                                // Give Move order to MainFormation to halt in its current position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, 0, 0);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.Ranged)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.RangedArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.RangedArrangementOrder;
 
-                                // Advance Ranged Formation given paces forward of MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.RangedFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.RangedFormOrder;
+
+                                // Advance Ranged Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset, customArmyFormation.RangedStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.Cavalry)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.CavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.CavalryArrangementOrder;
 
-                                // Advance Cavalry Formation given paces left of MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.CavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.CavalryFormOrder;
+
+                                // Advance Cavalry Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset, customArmyFormation.CavalryStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.HorseArcher)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.HorseArcherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HorseArcherArrangementOrder;
 
-                                // Advance HorseArcher Formation given paces right of MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.HorseArcherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HorseArcherFormOrder;
+
+                                // Advance HorseArcher Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset, customArmyFormation.HorseArcherStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.Skirmisher)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.SkirmisherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.SkirmisherArrangementOrder;
 
-                                // Advance Skirmisher Formation given paces behind MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.SkirmisherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.SkirmisherFormOrder;
+
+                                // Advance Skirmisher Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset, customArmyFormation.SkirmisherStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.HeavyInfantry)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.HeavyInfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyInfantryArrangementOrder;
 
-                                // Advance HeavyInfantry Formation given paces behind MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.HeavyInfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyInfantryFormOrder;
+
+                                // Advance HeavyInfantry Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset, customArmyFormation.HeavyInfantryStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.LightCavalry)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.LightCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.LightCavalryArrangementOrder;
 
-                                // Advance LightCavalry Formation given paces behind/left MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.LightCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.LightCavalryFormOrder;
+
+                                // Advance LightCavalry Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset, customArmyFormation.LightCavalryStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
                             else if (formation.FormationIndex == FormationClass.HeavyCavalry)
                             {
-                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled)
+                                // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
                                 formation.ArrangementOrder = customArmyFormation.HeavyCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyCavalryArrangementOrder;
 
-                                // Advance HeavyCavalry Formation given paces behind/right MainFormation's new position.
+                                // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                formation.FormOrder = customArmyFormation.HeavyCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyCavalryFormOrder;
+
+                                // Advance HeavyCavalry Formation given paces right/forward of MainFormation's new position.
                                 WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset, customArmyFormation.HeavyCavalryStartPosFwdOffset);
                                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
                             }
@@ -536,6 +608,30 @@ namespace ArmyFormationsMadeEasy.Patches
                     return ArrangementOrder.ArrangementOrderLine;
             }
         }
+
+        public FormOrder GetFormOrder(int index)
+        {
+            if (index == -3)
+            {
+                return FormOrder.FormOrderWider;
+            }
+            else if (index == -2)
+            {
+                return FormOrder.FormOrderWide;
+            }
+            else if (index == -1)
+            {
+                return FormOrder.FormOrderDeep;
+            }
+            else if (index > 0)
+            {
+                return FormOrder.FormOrderCustom(index);
+            }
+            else
+            {
+                return FormOrder.FormOrderWide;
+            }
+        }
     }
 
     public class CustomArmyFormation
@@ -544,77 +640,109 @@ namespace ArmyFormationsMadeEasy.Patches
         public bool Enabled { get; set; } = false;
         public int InfantryArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder InfantryArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int InfantryFormOrderNum { get; set; } = 0;
+        public FormOrder InfantryFormOrder { get; set; } = FormOrder.FormOrderWide;
         public int RangedArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder RangedArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int RangedFormOrderNum { get; set; } = 0;
+        public FormOrder RangedFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float RangedStartPosLateralOffset { get; set; } = 0f;
         public float RangedStartPosFwdOffset { get; set; } = 0f;
         public int CavalryArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder CavalryArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int CavalryFormOrderNum { get; set; } = 0;
+        public FormOrder CavalryFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float CavalryStartPosLateralOffset { get; set; } = 0f;
         public float CavalryStartPosFwdOffset { get; set; } = 0f;
         public int HorseArcherArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder HorseArcherArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int HorseArcherFormOrderNum { get; set; } = 0;
+        public FormOrder HorseArcherFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float HorseArcherStartPosLateralOffset { get; set; } = 0f;
         public float HorseArcherStartPosFwdOffset { get; set; } = 0f;
         public int SkirmisherArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder SkirmisherArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int SkirmisherFormOrderNum { get; set; } = 0;
+        public FormOrder SkirmisherFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float SkirmisherStartPosLateralOffset { get; set; } = 0f;
         public float SkirmisherStartPosFwdOffset { get; set; } = 0f;
         public int HeavyInfantryArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder HeavyInfantryArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int HeavyInfantryFormOrderNum { get; set; } = 0;
+        public FormOrder HeavyInfantryFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float HeavyInfantryStartPosLateralOffset { get; set; } = 0f;
         public float HeavyInfantryStartPosFwdOffset { get; set; } = 0f;
         public int LightCavalryArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder LightCavalryArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int LightCavalryFormOrderNum { get; set; } = 0;
+        public FormOrder LightCavalryFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float LightCavalryStartPosLateralOffset { get; set; } = 0f;
         public float LightCavalryStartPosFwdOffset { get; set; } = 0f;
         public int HeavyCavalryArrangementOrderNum { get; set; } = -1;
         public ArrangementOrder HeavyCavalryArrangementOrder { get; set; } = ArrangementOrder.ArrangementOrderLine;
+        public int HeavyCavalryFormOrderNum { get; set; } = 0;
+        public FormOrder HeavyCavalryFormOrder { get; set; } = FormOrder.FormOrderWide;
         public float HeavyCavalryStartPosLateralOffset { get; set; } = 0f;
         public float HeavyCavalryStartPosFwdOffset { get; set; } = 0f;
 
         public CustomArmyFormation( int customArmyFormationIndex,
                                     bool enabled,
-                                    int infantryArrangementOrderNum,
-                                    int rangedArrangementOrderNum, float rangedStartPosLateralOffset, float rangedStartPosFwdOffset,
-                                    int cavalryArrangementOrderNum, float cavalryStartPosLateralOffset, float cavalryStartPosFwdOffset,
-                                    int horseArcherArrangementOrderNum, float horseArcherStartPosLateralOffset, float horseArcherStartPosFwdOffset,
-                                    int skirmisherArrangementOrderNum, float skirmisherStartPosLateralOffset, float skirmisherStartPosFwdOffset,
-                                    int heavyInfantryArrangementOrderNum, float heavyInfantryStartPosLateralOffset, float heavyInfantryStartPosFwdOffset,
-                                    int lightCavalryArrangementOrderNum, float lightCavalryStartPosLateralOffset, float lightCavalryStartPosFwdOffset,
-                                    int heavyCavalryArrangementOrderNum, float heavyCavalryStartPosLateralOffset, float heavyCavalryStartPosFwdOffset)
+                                    int infantryArrangementOrderNum, int infantryFormOrderNum,
+                                    int rangedArrangementOrderNum, int rangedFormOrderNum, float rangedStartPosLateralOffset, float rangedStartPosFwdOffset,
+                                    int cavalryArrangementOrderNum, int cavalryFormOrderNum, float cavalryStartPosLateralOffset, float cavalryStartPosFwdOffset,
+                                    int horseArcherArrangementOrderNum, int horseArcherFormOrderNum, float horseArcherStartPosLateralOffset, float horseArcherStartPosFwdOffset,
+                                    int skirmisherArrangementOrderNum, int skirmisherFormOrderNum, float skirmisherStartPosLateralOffset, float skirmisherStartPosFwdOffset,
+                                    int heavyInfantryArrangementOrderNum, int heavyInfantryFormOrderNum, float heavyInfantryStartPosLateralOffset, float heavyInfantryStartPosFwdOffset,
+                                    int lightCavalryArrangementOrderNum, int lightCavalryFormOrderNum, float lightCavalryStartPosLateralOffset, float lightCavalryStartPosFwdOffset,
+                                    int heavyCavalryArrangementOrderNum, int heavyCavalryFormOrderNum, float heavyCavalryStartPosLateralOffset, float heavyCavalryStartPosFwdOffset)
         {
             Helpers helpers = new Helpers();
             CustomArmyFormationIndex = customArmyFormationIndex;
             Enabled = enabled;
             InfantryArrangementOrderNum = infantryArrangementOrderNum;
             InfantryArrangementOrder = helpers.GetArrangementOrder(infantryArrangementOrderNum);
+            InfantryFormOrderNum = infantryFormOrderNum;
+            InfantryFormOrder = helpers.GetFormOrder(infantryFormOrderNum);
             RangedArrangementOrderNum = rangedArrangementOrderNum;
             RangedArrangementOrder = helpers.GetArrangementOrder(rangedArrangementOrderNum);
+            RangedFormOrderNum = rangedFormOrderNum;
+            RangedFormOrder = helpers.GetFormOrder(rangedFormOrderNum);
             RangedStartPosLateralOffset = rangedStartPosLateralOffset;
             RangedStartPosFwdOffset = rangedStartPosFwdOffset;
             CavalryArrangementOrderNum = cavalryArrangementOrderNum;
             CavalryArrangementOrder = helpers.GetArrangementOrder(cavalryArrangementOrderNum);
+            CavalryFormOrderNum = cavalryFormOrderNum;
+            CavalryFormOrder = helpers.GetFormOrder(cavalryFormOrderNum);
             CavalryStartPosLateralOffset = cavalryStartPosLateralOffset;
             CavalryStartPosFwdOffset = cavalryStartPosFwdOffset;
             HorseArcherArrangementOrderNum = horseArcherArrangementOrderNum;
             HorseArcherArrangementOrder = helpers.GetArrangementOrder(horseArcherArrangementOrderNum);
+            HorseArcherFormOrderNum = horseArcherFormOrderNum;
+            HorseArcherFormOrder = helpers.GetFormOrder(horseArcherFormOrderNum);
             HorseArcherStartPosLateralOffset = horseArcherStartPosLateralOffset;
             HorseArcherStartPosFwdOffset = horseArcherStartPosFwdOffset;
             SkirmisherArrangementOrderNum = skirmisherArrangementOrderNum;
             SkirmisherArrangementOrder = helpers.GetArrangementOrder(skirmisherArrangementOrderNum);
+            SkirmisherFormOrderNum = skirmisherFormOrderNum;
+            SkirmisherFormOrder = helpers.GetFormOrder(skirmisherFormOrderNum);
             SkirmisherStartPosLateralOffset = skirmisherStartPosLateralOffset;
             SkirmisherStartPosFwdOffset = skirmisherStartPosFwdOffset;
             HeavyInfantryArrangementOrderNum = heavyInfantryArrangementOrderNum;
             HeavyInfantryArrangementOrder = helpers.GetArrangementOrder(heavyInfantryArrangementOrderNum);
+            HeavyInfantryFormOrderNum = heavyInfantryFormOrderNum;
+            HeavyInfantryFormOrder = helpers.GetFormOrder(heavyInfantryFormOrderNum);
             HeavyInfantryStartPosLateralOffset = heavyInfantryStartPosLateralOffset;
             HeavyInfantryStartPosFwdOffset = heavyInfantryStartPosFwdOffset;
             LightCavalryArrangementOrderNum = lightCavalryArrangementOrderNum;
             LightCavalryArrangementOrder = helpers.GetArrangementOrder(lightCavalryArrangementOrderNum);
+            LightCavalryFormOrderNum = lightCavalryFormOrderNum;
+            LightCavalryFormOrder = helpers.GetFormOrder(lightCavalryFormOrderNum);
             LightCavalryStartPosLateralOffset = lightCavalryStartPosLateralOffset;
             LightCavalryStartPosFwdOffset = lightCavalryStartPosFwdOffset;
             HeavyCavalryArrangementOrderNum = heavyCavalryArrangementOrderNum;
             HeavyCavalryArrangementOrder = helpers.GetArrangementOrder(heavyCavalryArrangementOrderNum);
+            HeavyCavalryFormOrderNum = heavyCavalryFormOrderNum;
+            HeavyCavalryFormOrder = helpers.GetFormOrder(heavyCavalryFormOrderNum);
             HeavyCavalryStartPosLateralOffset = heavyCavalryStartPosLateralOffset;
             HeavyCavalryStartPosFwdOffset = heavyCavalryStartPosFwdOffset;
         }
