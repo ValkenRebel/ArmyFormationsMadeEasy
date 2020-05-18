@@ -342,58 +342,60 @@ namespace ArmyFormationsMadeEasy.Patches
                 foreach (var team in teams)
                 {
                     // Set the main formation to act as leader of Army Formation
-                    Formation MainFormation = team.Formations.First();
-
-                    foreach (Formation formation in team.Formations)
+                    Formation MainFormation = team.Formations.Count() > 0 ? team.Formations.First() : null;
+                    if (MainFormation != null)
                     {
-                        // Halt the MainFormation & move each formation in Army to a position relative to MainFormation's new position (default Infantry)
-                        if (formation == team.Formations.First())
+                        foreach (Formation formation in team.Formations)
                         {
-                            //Give Move order to MainFormation to halt in current position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, 0, 0);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.Ranged)
-                        {
-                            //Advance Ranged Formation given paces forward of MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset, customArmyFormation.RangedStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.Cavalry)
-                        {
-                            //Advance Cavalry Formation given paces left of MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset, customArmyFormation.CavalryStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.HorseArcher)
-                        {
-                            //Advance HorseArcher Formation given paces right of MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset, customArmyFormation.HorseArcherStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.Skirmisher)
-                        {
-                            //Advance Skirmisher Formation given paces behind MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset, customArmyFormation.SkirmisherStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.HeavyInfantry)
-                        {
-                            //Advance HeavyInfantry Formation given paces behind MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset, customArmyFormation.HeavyInfantryStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.LightCavalry)
-                        {
-                            //Advance LightCavalry Formation given paces behind/left MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset, customArmyFormation.LightCavalryStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                        }
-                        else if (formation.FormationIndex == FormationClass.HeavyCavalry)
-                        {
-                            //Advance HeavyCavalry Formation given paces behind/right MainFormation's new position.
-                            WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset, customArmyFormation.HeavyCavalryStartPosFwdOffset);
-                            formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            // Halt the MainFormation & move each formation in Army to a position relative to MainFormation's new position (default Infantry)
+                            if (formation == team.Formations.First())
+                            {
+                                //Give Move order to MainFormation to halt in current position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, 0, 0);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.Ranged)
+                            {
+                                //Advance Ranged Formation given paces forward of MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset, customArmyFormation.RangedStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.Cavalry)
+                            {
+                                //Advance Cavalry Formation given paces left of MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset, customArmyFormation.CavalryStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.HorseArcher)
+                            {
+                                //Advance HorseArcher Formation given paces right of MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset, customArmyFormation.HorseArcherStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.Skirmisher)
+                            {
+                                //Advance Skirmisher Formation given paces behind MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset, customArmyFormation.SkirmisherStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.HeavyInfantry)
+                            {
+                                //Advance HeavyInfantry Formation given paces behind MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset, customArmyFormation.HeavyInfantryStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.LightCavalry)
+                            {
+                                //Advance LightCavalry Formation given paces behind/left MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset, customArmyFormation.LightCavalryStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
+                            else if (formation.FormationIndex == FormationClass.HeavyCavalry)
+                            {
+                                //Advance HeavyCavalry Formation given paces behind/right MainFormation's new position.
+                                WorldPosition newWorldPos = CalcWorldPosRelToFormation(MainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset, customArmyFormation.HeavyCavalryStartPosFwdOffset);
+                                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                            }
                         }
                     }
                 }
