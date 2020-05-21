@@ -222,17 +222,29 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config.cs" />
     <Compile Include="Patches\MissionBehaviourPatches.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubModule.cs" />
+    <Compile Include="Utilities\XmlSerialization.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="D:\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ArmyFormationsMadeEasy\ModuleData\ArmyFormationsMadeEasyConfig.xml">
+      <Link>SubModuleFiles\ModuleData\ArmyFormationsMadeEasyConfig.xml</Link>
+    </Content>
+    <Content Include="D:\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ArmyFormationsMadeEasy\SubModule.xml">
+      <Link>SubModuleFiles\SubModule.xml</Link>
+    </Content>
     <Content Include="readme.txt" />
-    <Content Include="SubModule.xml" />
+    <Content Include="SubModule.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="SubModuleFiles\ModuleData\List of Keybinding Numbers.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

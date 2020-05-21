@@ -21,7 +21,7 @@ namespace ArmyFormationsMadeEasy
             {
                 FileDatabase.Initialise(ModuleFolderName);
 
-                var harmony = new Harmony("mod.bannerlord.mipen");
+                var harmony = new Harmony("mod.valkenrebel.bannerlord.armyformationsmadeeasy");
                 harmony.PatchAll();
             }
             catch (Exception ex)
