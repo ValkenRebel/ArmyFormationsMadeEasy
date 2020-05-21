@@ -15,10 +15,18 @@ namespace ArmyFormationsMadeEasy.Patches
     [HarmonyPatch(typeof(MissionBehaviour), "OnMissionTick")]
     public class OnMissionTickPatch
     {
+        public static bool AnyAlternateKeysHeldDown { get; set; } = false;
+        public static bool LAltKeyPressed { get; set; } = false;
+        public static bool LCtrlKeyPressed { get; set; } = false;
+        public static bool LShiftKeyPressed { get; set; } = false;
+        public static bool RAltKeyPressed { get; set; } = false;
+        public static bool RCtrlKeyPressed { get; set; } = false;
+        public static bool RShiftKeyPressed { get; set; } = false;
         public static bool F9KeyPressed { get; set; } = false;
         public static bool F10KeyPressed { get; set; } = false;
         public static bool F11KeyPressed { get; set; } = false;
         public static bool F12KeyPressed { get; set; } = false;
+
         public static bool AllFormationFrontAttPtUpdated { get; set; } = false;
         public static bool[] FormationFrontAttPtUpdated { get; set; } = new bool[8] { false, false, false, false, false, false, false, false };
         public static bool PlayerBattleSideEnumSet { get; set; } = false;
@@ -50,10 +58,13 @@ namespace ArmyFormationsMadeEasy.Patches
                 InitCustomArmyFormationsList();
             }
 
+            // Update if Alt, Ctrl, or Shift are currently held down (Left & Right)
+            UpdateAltKeyStates();
+
             // 'F9' - Advance selected formations ten paces forward
             if ((Input.IsKeyPressed(InputKey.F9)) && !F9KeyPressed)
             {
-                if (__instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.AdvanceTenPacesEnabled)
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.AdvanceTenPacesEnabled)
                 {
                     SelectedFormationsAdvanceTenPaces(__instance);
                     // Success message
@@ -71,7 +82,7 @@ namespace ArmyFormationsMadeEasy.Patches
             // 'F10' - Fallback selected formations ten paces
             if (Input.IsKeyPressed(InputKey.F10) && !F10KeyPressed)
             {
-                if (__instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.FallbackTenPacesEnabled)
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.FallbackTenPacesEnabled)
                 {
                     SelectedFormationsFallbackTenPaces(__instance);
                     // Success message
@@ -90,7 +101,7 @@ namespace ArmyFormationsMadeEasy.Patches
             // 'F11' - Move all units to the First 'Enabled' Custom Army Formation positions
             if (Input.IsKeyPressed(InputKey.F11) && !F11KeyPressed)
             {
-                if (__instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
                     // Move all units to the First 'Enabled' Custom Army Formation positions (Default: F11)
                     MoveAllToFirstEnabledCustArmyFormPos(__instance);
@@ -108,7 +119,7 @@ namespace ArmyFormationsMadeEasy.Patches
             // 'F12' - Move all units to the Second 'Enabled' Custom Army Formation positions
             if (Input.IsKeyPressed(InputKey.F12) && !F12KeyPressed)
             {
-                if (__instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
                     // Move all units to the Second 'Enabled' Custom Army Formation positions (Default: F12)
                     MoveAllToSecondEnabledCustArmyFormPos(__instance);
@@ -339,6 +350,92 @@ namespace ArmyFormationsMadeEasy.Patches
             CustomArmyFormations.Add(customArmyFormation05);
         }
         
+        // Update if Alt, Ctrl, or Shift are currently held down (Left & Right)
+        public static void UpdateAltKeyStates()
+        {
+            // 'LAlt' - Check for key held down
+            if ((Input.IsKeyPressed(InputKey.LeftAlt)) && !LAltKeyPressed)
+            {
+                // Prevent repeat - until 'LAlt' key has been released
+                LAltKeyPressed = true;
+            }
+            else if (Input.IsKeyReleased(InputKey.LeftAlt) && LAltKeyPressed)
+            {
+                // Allow 'LAlt' key press to be registered once again
+                LAltKeyPressed = false;
+            }
+
+            // 'LCtrl' - Check for key held down
+            if ((Input.IsKeyPressed(InputKey.LeftControl)) && !LCtrlKeyPressed)
+            {
+                // Prevent repeat - until 'LCtrl' key has been released
+                LCtrlKeyPressed = true;
+            }
+            else if (Input.IsKeyReleased(InputKey.LeftControl) && LCtrlKeyPressed)
+            {
+                // Allow 'LCtrl' key press to be registered once again
+                LCtrlKeyPressed = false;
+            }
+
+            // 'LShift' - Check for key held down
+            if ((Input.IsKeyPressed(InputKey.LeftShift)) && !LShiftKeyPressed)
+            {
+                // Prevent repeat - until 'LShift' key has been released
+                LShiftKeyPressed = true;
+            }
+            else if (Input.IsKeyReleased(InputKey.LeftShift) && LShiftKeyPressed)
+            {
+                // Allow 'LShift' key press to be registered once again
+                LShiftKeyPressed = false;
+            }
+
+            // 'RAlt' - Check for key held down
+            if ((Input.IsKeyPressed(InputKey.RightAlt)) && !RAltKeyPressed)
+            {
+                // Prevent repeat - until 'RAlt' key has been released
+                RAltKeyPressed = true;
+            }
+            else if (Input.IsKeyReleased(InputKey.RightAlt) && RAltKeyPressed)
+            {
+                // Allow 'RAlt' key press to be registered once again
+                RAltKeyPressed = false;
+            }
+
+            // 'RCtrl' - Check for key held down
+            if ((Input.IsKeyPressed(InputKey.RightControl)) && !RCtrlKeyPressed)
+            {
+                // Prevent repeat - until 'RCtrl' key has been released
+                RCtrlKeyPressed = true;
+            }
+            else if (Input.IsKeyReleased(InputKey.RightControl) && RCtrlKeyPressed)
+            {
+                // Allow 'RCtrl' key press to be registered once again
+                RCtrlKeyPressed = false;
+            }
+
+            // 'RShift' - Check for key held down
+            if ((Input.IsKeyPressed(InputKey.RightShift)) && !RShiftKeyPressed)
+            {
+                // Prevent repeat - until 'RShift' key has been released
+                RShiftKeyPressed = true;
+            }
+            else if (Input.IsKeyReleased(InputKey.RightShift) && RShiftKeyPressed)
+            {
+                // Allow 'RShift' key press to be registered once again
+                RShiftKeyPressed = false;
+            }
+
+            // Check if any of the Alternate keys are currently pressed - Alt, Ctrl, Shift (Left & Right)
+            if (LAltKeyPressed || LCtrlKeyPressed || LShiftKeyPressed || RAltKeyPressed || RCtrlKeyPressed || RShiftKeyPressed)
+            {
+                AnyAlternateKeysHeldDown = true;
+            }
+            else
+            {
+                AnyAlternateKeysHeldDown = false;
+            }
+        }
+
 
         // Advance currently selected formations ten paces forward (Cumulative)
         private static void SelectedFormationsAdvanceTenPaces(MissionBehaviour missionBehaviourInstance)
