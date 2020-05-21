@@ -27,6 +27,14 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool CustomArmyFormationParamsSet { get; set; } = false;
         public static List<CustomArmyFormation> CustomArmyFormations { get; set; } = new List<CustomArmyFormation>();
 
+        // Enable the Mod if it's enabled in the in-game Mod Options
+        static bool Prepare()
+        {
+            return Settings.Instance.CustomArmyFormationsModEnabled;
+        }
+
+
+        // Patched 'MissionBehaviour.OnMissionTick()' (Postfix)
         static void Postfix(MissionBehaviour __instance)
         {
             // Get the Player's Team.Side
@@ -115,14 +123,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 F12KeyPressed = false;
             }
         }
-
-
-
-        // Enable the Mod if it's enabled in the in-game Mod Options
-        static bool Prepare()
-        {
-            return Settings.Instance.CustomArmyFormationsModEnabled;
-        }
+        
 
         // Fill the CustomArmyFormations List
         public static void InitCustomArmyFormationsList()
@@ -337,8 +338,7 @@ namespace ArmyFormationsMadeEasy.Patches
                                                                                 );
             CustomArmyFormations.Add(customArmyFormation05);
         }
-
-
+        
 
         // Advance currently selected formations ten paces forward (Cumulative)
         private static void SelectedFormationsAdvanceTenPaces(MissionBehaviour missionBehaviourInstance)
