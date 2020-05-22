@@ -24,14 +24,22 @@ namespace ArmyFormationsMadeEasy
         #region MissionBehaviour Patches
         #region Custom Formation Settings
         [XmlElement]
-        [SettingProperty("Allow 'Advance 10 Paces' Move Order", "Advance (press F9) last selected units by 10 Paces. This check-box currently does nothing - it is just here to inform the user.")]
-        [SettingPropertyGroup("Allow 'Advance 10 Paces' Move Order   (press F9)", true)]
-        public bool AdvanceTenPacesEnabled { get; set; } = true;
+        [SettingProperty("Allow 'Advance X Paces' Move Order", "Advance (Default: press F9) last selected units by X Paces.")]
+        [SettingPropertyGroup("Allow 'Advance X Paces' Move Order   (Default: press F9)", true)]
+        public bool AdvanceYPacesEnabled { get; set; } = true;
+        [XmlElement]
+        [SettingProperty("X", -20, 20, "Advance (Default: press F9) last selected units by 'X' Paces. Default: 'X'= 10")]
+        [SettingPropertyGroup("Allow 'Advance X Paces' Move Order   (Default: press F9)")]
+        public int AdvanceYPaces { get; set; } = 10;
 
         [XmlElement]
-        [SettingProperty("Allow 'Fallback 10 Paces' Move Order", "Fallback (press F10) last selected units by 10 Paces. This check-box currently does nothing - it is just here to inform the user.")]
-        [SettingPropertyGroup("Allow 'Fallback 10 Paces' Move Order   (press F10)", true)]
-        public bool FallbackTenPacesEnabled { get; set; } = true;
+        [SettingProperty("Allow 'Fallback X Paces' Move Order", "Fallback (Default: press F10) last selected units by X Paces.")]
+        [SettingPropertyGroup("Allow 'Fallback X Paces' Move Order   (Default: press F10)", true)]
+        public bool FallbackYPacesEnabled { get; set; } = true;
+        [XmlElement]
+        [SettingProperty("X", -20, 20, "Fallback (Default: press F10) last selected units by 'X' Paces. Default: 'X'= -10")]
+        [SettingPropertyGroup("Allow 'Fallback X Paces' Move Order   (Default: press F10)")]
+        public int FallbackYPaces { get; set; } = -10;
 
         [XmlElement]
         [SettingProperty("Enable Custom Army Formations", "First Enabled Formation uses F11 key. Second Enabled Formation uses F12 key. Automatically moves all units to their custom army formation positions relative to first available formation index - default is Infantry(I).")]
@@ -297,7 +305,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Custom Army Formation 3   (Default: press NumPad5)", "'Flat Stick-Figure' Formation: Left:Cavalry(III). CenterLeft:Ranged(II)/Infantry(I)/Skirmisher(V)/LightCavalry(VII). CenterRight:Ranged(II)/HeavyInfantry(VI)/Skirmisher(V)/HeavyCavalry(VIII) Right:HorseArcher(IV).")]
         [SettingPropertyGroup("Custom Army Formation 3   (Default: press NumPad5)", true)]
-        public bool CustomArmyFormation02Enabled { get; set; } = false;
+        public bool CustomArmyFormation02Enabled { get; set; } = true;
         [XmlElement]
         [SettingProperty("Unit Arrangement - Infantry (I)", -1, 7,  "-1=NotSet (default), 0=Circle, 1=Column, 2=Line, 3=Loose, 4=Scatter, 5=ShieldWall, 6=Skein, 7=Square")]
         [SettingPropertyGroup("Custom Army Formation 3   (Default: press NumPad5)")]
@@ -424,7 +432,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Custom Army Formation 4   (Default: press NumPad6)", "'Flat Stick-Figure' Formation: Left:Cavalry(III). CenterLeft:Ranged(II)/Infantry(I)/Skirmisher(V)/LightCavalry(VII). CenterRight:Ranged(II)/HeavyInfantry(VI)/Skirmisher(V)/HeavyCavalry(VIII) Right:HorseArcher(IV).")]
         [SettingPropertyGroup("Custom Army Formation 4   (Default: press NumPad6)", true)]
-        public bool CustomArmyFormation03Enabled { get; set; } = false;
+        public bool CustomArmyFormation03Enabled { get; set; } = true;
         [XmlElement]
         [SettingProperty("Unit Arrangement - Infantry (I)", -1, 7, "-1=NotSet (default), 0=Circle, 1=Column, 2=Line, 3=Loose, 4=Scatter, 5=ShieldWall, 6=Skein, 7=Square")]
         [SettingPropertyGroup("Custom Army Formation 4   (Default: press NumPad6)")]
@@ -551,7 +559,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Custom Army Formation 5   (Default: press NumPad7)", "'Flat Stick-Figure' Formation: Left:Cavalry(III). CenterLeft:Ranged(II)/Infantry(I)/Skirmisher(V)/LightCavalry(VII). CenterRight:Ranged(II)/HeavyInfantry(VI)/Skirmisher(V)/HeavyCavalry(VIII) Right:HorseArcher(IV).")]
         [SettingPropertyGroup("Custom Army Formation 5   (Default: press NumPad7)", true)]
-        public bool CustomArmyFormation04Enabled { get; set; } = false;
+        public bool CustomArmyFormation04Enabled { get; set; } = true;
         [XmlElement]
         [SettingProperty("Unit Arrangement - Infantry (I)", -1, 7, "-1=NotSet (default), 0=Circle, 1=Column, 2=Line, 3=Loose, 4=Scatter, 5=ShieldWall, 6=Skein, 7=Square")]
         [SettingPropertyGroup("Custom Army Formation 5   (Default: press NumPad7)")]
@@ -678,7 +686,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Custom Army Formation 6   (Default: press NumPad8)", "'Checker Board' Formation: Front: Ranged(II). Left:Cavalry(III). 1stRow: Left:Skirmisher(V) Center:Infantry(I) Right:HorseArcher(IV). 2ndRow: Left:HeavyInfantry(VI) Right:LightCavalry(VII). 3rdRow: HeavyCavalry(VIII).")]
         [SettingPropertyGroup("Custom Army Formation 6   (Default: press NumPad8)", true)]
-        public bool CustomArmyFormation05Enabled { get; set; } = false;
+        public bool CustomArmyFormation05Enabled { get; set; } = true;
         [XmlElement]
         [SettingProperty("Unit Arrangement - Infantry (I)", -1, 7, "-1=NotSet (default), 0=Circle, 1=Column, 2=Line, 3=Loose, 4=Scatter, 5=ShieldWall, 6=Skein, 7=Square")]
         [SettingPropertyGroup("Custom Army Formation 6   (Default: press NumPad8)")]
@@ -805,7 +813,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Custom Army Formation 7   (Default: press NumPad9)", "'Checker Board' Formation: Rear: Ranged(II). Left:Cavalry(III). 1stRow: Left:Skirmisher(V) Center:Infantry(I) Right:HorseArcher(IV). 2ndRow: Left:HeavyInfantry(VI) Right:LightCavalry(VII). 3rdRow: HeavyCavalry(VIII).")]
         [SettingPropertyGroup("Custom Army Formation 7   (Default: press NumPad9)", true)]
-        public bool CustomArmyFormation06Enabled { get; set; } = false;
+        public bool CustomArmyFormation06Enabled { get; set; } = true;
         [XmlElement]
         [SettingProperty("Unit Arrangement - Infantry (I)", -1, 7, "-1=NotSet (default), 0=Circle, 1=Column, 2=Line, 3=Loose, 4=Scatter, 5=ShieldWall, 6=Skein, 7=Square")]
         [SettingPropertyGroup("Custom Army Formation 7   (Default: press NumPad9)")]
@@ -932,7 +940,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Custom Army Formation 8   (Default: press NumPad0)", "'Checker Board (2ndRow-Advance)' Formation: Rear: Ranged(II). Left:Cavalry(III). 1stRow: Left:Skirmisher(V) CenterLeft:HeavyInfantry(VI) Center:Infantry(I) CenterRight:LightCavalry(VII) Right:HorseArcher(IV). 3rdRow: HeavyCavalry(VIII).")]
         [SettingPropertyGroup("Custom Army Formation 8   (Default: press NumPad0)", true)]
-        public bool CustomArmyFormation07Enabled { get; set; } = false;
+        public bool CustomArmyFormation07Enabled { get; set; } = true;
         [XmlElement]
         [SettingProperty("Unit Arrangement - Infantry (I)", -1, 7, "-1=NotSet (default), 0=Circle, 1=Column, 2=Line, 3=Loose, 4=Scatter, 5=ShieldWall, 6=Skein, 7=Square")]
         [SettingPropertyGroup("Custom Army Formation 8   (Default: press NumPad0)")]

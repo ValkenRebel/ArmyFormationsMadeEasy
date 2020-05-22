@@ -68,29 +68,29 @@ namespace ArmyFormationsMadeEasy.Patches
             UpdateAltKeyStates();
 
             // 'Default: F9' - Advance selected formations 'x' paces forward
-            if ((Input.IsKeyPressed(Config.AdvanceSelectedKey)) && !AdvanceSelectedKeyPressed)
+            if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyPressed(Config.AdvanceSelectedKey) && !AdvanceSelectedKeyPressed)
             {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.AdvanceTenPacesEnabled)
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.AdvanceYPacesEnabled)
                 {
-                    SelectedFormationsAdvanceTenPaces(__instance);
+                    SelectedFormationsAdvanceYPaces(__instance);
                     // Success message
                     InformationManager.DisplayMessage(new InformationMessage("Selected formations advance 10 paces!"));
                 }
                 // Prevent repeat - until 'AdvanceSelectedKey' has been released
                 AdvanceSelectedKeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.AdvanceSelectedKey) && AdvanceSelectedKeyPressed)
+            else if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyReleased(Config.AdvanceSelectedKey) && AdvanceSelectedKeyPressed)
             {
                 // Allow 'AdvanceSelectedKey' press to be registered once again
                 AdvanceSelectedKeyPressed = false;
             }
 
             // 'Default: F10' - Fallback selected formations 'x' paces backwards
-            if (Input.IsKeyPressed(Config.FallbackSelectedKey) && !FallbackSelectedKeyPressed)
+            if (Settings.Instance.FallbackYPacesEnabled && Input.IsKeyPressed(Config.FallbackSelectedKey) && !FallbackSelectedKeyPressed)
             {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.FallbackTenPacesEnabled)
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0 && Settings.Instance.FallbackYPacesEnabled)
                 {
-                    SelectedFormationsFallbackTenPaces(__instance);
+                    SelectedFormationsFallbackYPaces(__instance);
                     // Success message
                     InformationManager.DisplayMessage(new InformationMessage("Selected formations fallback 10 paces!"));
 
@@ -98,14 +98,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'FallbackSelectedKey' has been released
                 FallbackSelectedKeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.FallbackSelectedKey) && FallbackSelectedKeyPressed)
+            else if (Settings.Instance.FallbackYPacesEnabled && Input.IsKeyReleased(Config.FallbackSelectedKey) && FallbackSelectedKeyPressed)
             {
                 // Allow 'FallbackSelectedKey' press to be registered once again
                 FallbackSelectedKeyPressed = false;
             }
 
             // 'Default: F11' - Move all units to 'Custom Army Formation 1' positions
-            if (Input.IsKeyPressed(Config.CustomFormation1Key) && !CustomFormation1KeyPressed)
+            if (Settings.Instance.CustomArmyFormation00Enabled && Input.IsKeyPressed(Config.CustomFormation1Key) && !CustomFormation1KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -119,14 +119,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation1Key' has been released
                 CustomFormation1KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation1Key) && CustomFormation1KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation00Enabled && Input.IsKeyReleased(Config.CustomFormation1Key) && CustomFormation1KeyPressed)
             {
                 // Allow 'CustomFormation1Key' press to be registered once again
                 CustomFormation1KeyPressed = false;
             }
 
             // 'Default: F12' - Move all units to 'Custom Army Formation 2' positions
-            if (Input.IsKeyPressed(Config.CustomFormation2Key) && !CustomFormation2KeyPressed)
+            if (Settings.Instance.CustomArmyFormation01Enabled && Input.IsKeyPressed(Config.CustomFormation2Key) && !CustomFormation2KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -140,14 +140,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation2Key' has been released
                 CustomFormation2KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation2Key) && CustomFormation2KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation01Enabled && Input.IsKeyReleased(Config.CustomFormation2Key) && CustomFormation2KeyPressed)
             {
                 // Allow 'CustomFormation2Key' press to be registered once again
                 CustomFormation2KeyPressed = false;
             }
 
             // 'Default: NumPad5' - Move all units to 'Custom Army Formation 3' positions
-            if (Input.IsKeyPressed(Config.CustomFormation3Key) && !CustomFormation3KeyPressed)
+            if (Settings.Instance.CustomArmyFormation02Enabled && Input.IsKeyPressed(Config.CustomFormation3Key) && !CustomFormation3KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -161,14 +161,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation3Key' has been released
                 CustomFormation3KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation3Key) && CustomFormation3KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation02Enabled && Input.IsKeyReleased(Config.CustomFormation3Key) && CustomFormation3KeyPressed)
             {
                 // Allow 'CustomFormation3Key' press to be registered once again
                 CustomFormation3KeyPressed = false;
             }
 
             // 'Default: NumPad6' - Move all units to 'Custom Army Formation 4' positions
-            if (Input.IsKeyPressed(Config.CustomFormation4Key) && !CustomFormation4KeyPressed)
+            if (Settings.Instance.CustomArmyFormation03Enabled && Input.IsKeyPressed(Config.CustomFormation4Key) && !CustomFormation4KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -182,14 +182,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation4Key' has been released
                 CustomFormation4KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation4Key) && CustomFormation4KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation03Enabled && Input.IsKeyReleased(Config.CustomFormation4Key) && CustomFormation4KeyPressed)
             {
                 // Allow 'CustomFormation4Key' press to be registered once again
                 CustomFormation4KeyPressed = false;
             }
 
             // 'Default: NumPad7' - Move all units to 'Custom Army Formation 5' positions
-            if (Input.IsKeyPressed(Config.CustomFormation5Key) && !CustomFormation5KeyPressed)
+            if (Settings.Instance.CustomArmyFormation04Enabled && Input.IsKeyPressed(Config.CustomFormation5Key) && !CustomFormation5KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -203,14 +203,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation5Key' has been released
                 CustomFormation5KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation5Key) && CustomFormation5KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation04Enabled && Input.IsKeyReleased(Config.CustomFormation5Key) && CustomFormation5KeyPressed)
             {
                 // Allow 'CustomFormation5Key' press to be registered once again
                 CustomFormation5KeyPressed = false;
             }
 
             // 'Default: NumPad8' - Move all units to 'Custom Army Formation 6' positions
-            if (Input.IsKeyPressed(Config.CustomFormation6Key) && !CustomFormation6KeyPressed)
+            if (Settings.Instance.CustomArmyFormation05Enabled && Input.IsKeyPressed(Config.CustomFormation6Key) && !CustomFormation6KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -224,14 +224,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation6Key' has been released
                 CustomFormation6KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation6Key) && CustomFormation6KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation05Enabled && Input.IsKeyReleased(Config.CustomFormation6Key) && CustomFormation6KeyPressed)
             {
                 // Allow 'CustomFormation6Key' press to be registered once again
                 CustomFormation6KeyPressed = false;
             }
 
             // 'Default: NumPad9' - Move all units to 'Custom Army Formation 7' positions
-            if (Input.IsKeyPressed(Config.CustomFormation7Key) && !CustomFormation7KeyPressed)
+            if (Settings.Instance.CustomArmyFormation06Enabled && Input.IsKeyPressed(Config.CustomFormation7Key) && !CustomFormation7KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -245,14 +245,14 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation7Key' has been released
                 CustomFormation7KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation7Key) && CustomFormation7KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation06Enabled && Input.IsKeyReleased(Config.CustomFormation7Key) && CustomFormation7KeyPressed)
             {
                 // Allow 'CustomFormation7Key' press to be registered once again
                 CustomFormation7KeyPressed = false;
             }
 
             // 'Default: NumPad0' - Move all units to 'Custom Army Formation 8' positions
-            if (Input.IsKeyPressed(Config.CustomFormation8Key) && !CustomFormation8KeyPressed)
+            if (Settings.Instance.CustomArmyFormation07Enabled && Input.IsKeyPressed(Config.CustomFormation8Key) && !CustomFormation8KeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
@@ -266,7 +266,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'CustomFormation8Key' has been released
                 CustomFormation8KeyPressed = true;
             }
-            else if (Input.IsKeyReleased(Config.CustomFormation8Key) && CustomFormation8KeyPressed)
+            else if (Settings.Instance.CustomArmyFormation07Enabled && Input.IsKeyReleased(Config.CustomFormation8Key) && CustomFormation8KeyPressed)
             {
                 // Allow 'CustomFormation8Key' press to be registered once again
                 CustomFormation8KeyPressed = false;
@@ -645,8 +645,8 @@ namespace ArmyFormationsMadeEasy.Patches
         }
 
 
-        // Advance currently selected formations ten paces forward (Cumulative)
-        private static void SelectedFormationsAdvanceTenPaces(MissionBehaviour missionBehaviourInstance)
+        // Advance currently selected formations Y paces forward (Cumulative)
+        private static void SelectedFormationsAdvanceYPaces(MissionBehaviour missionBehaviourInstance)
         {
             MBReadOnlyList<Formation> SelectedFormationsList = missionBehaviourInstance.Mission.PlayerTeam.PlayerOrderController.SelectedFormations;
 
@@ -655,11 +655,11 @@ namespace ArmyFormationsMadeEasy.Patches
                 WorldPosition newWorldPos;
                 if (AllFormationFrontAttPtUpdated || FormationFrontAttPtUpdated[(int)formation.FormationIndex])
                 {
-                    newWorldPos = CalcWorldPosTenPacesFwdFrontAttPt(formation, missionBehaviourInstance);
+                    newWorldPos = CalcWorldPosFrontAttPtOffset(formation, missionBehaviourInstance, 0, Settings.Instance.AdvanceYPaces);
                 }
                 else
                 {
-                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, 10f);
+                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, Settings.Instance.AdvanceYPaces);
                     // Mark this formation's FrontAttachmentPoint as having been updated for the first time
                     FormationFrontAttPtUpdated[(int)formation.FormationIndex] = true;
                 }
@@ -667,8 +667,8 @@ namespace ArmyFormationsMadeEasy.Patches
             }
         }
 
-        // Fallback currently selected formations ten paces forward (Cumulative)
-        private static void SelectedFormationsFallbackTenPaces(MissionBehaviour missionBehaviourInstance)
+        // Fallback currently selected formations Y paces backward (Cumulative)
+        private static void SelectedFormationsFallbackYPaces(MissionBehaviour missionBehaviourInstance)
         {
             MBReadOnlyList<Formation> SelectedFormationsList = missionBehaviourInstance.Mission.PlayerTeam.PlayerOrderController.SelectedFormations;
 
@@ -677,11 +677,11 @@ namespace ArmyFormationsMadeEasy.Patches
                 WorldPosition newWorldPos;
                 if (AllFormationFrontAttPtUpdated || FormationFrontAttPtUpdated[(int)formation.FormationIndex])
                 {
-                    newWorldPos = CalcWorldPosFrontAttPtOffset(formation, missionBehaviourInstance, 0, -10f);
+                    newWorldPos = CalcWorldPosFrontAttPtOffset(formation, missionBehaviourInstance, 0, Settings.Instance.FallbackYPaces);
                 }
                 else
                 {
-                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, -10f);
+                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, Settings.Instance.FallbackYPaces);
                     // Mark this formation's FrontAttachmentPoint as having been updated for the first time
                     FormationFrontAttPtUpdated[(int)formation.FormationIndex] = true;
                 }
@@ -689,19 +689,7 @@ namespace ArmyFormationsMadeEasy.Patches
             }
         }
 
-        // Calculate WorldPosition ten paces in front of FrontAttachmentPoint (Cumulative)
-        private static WorldPosition CalcWorldPosTenPacesFwdFrontAttPt(Formation formation, MissionBehaviour missionBehaviourInstance)
-        {
-            float moveX = formation.Direction.x * 10;
-            float moveY = formation.Direction.y * 10;
-            WorldPosition formationCurWorldPos = formation.FrontAttachmentPoint;
-            Vec3 formationNewPosition = new Vec3(formationCurWorldPos.X + moveX, formationCurWorldPos.Y + moveY);
-            WorldPosition formationNewWorldPos = new WorldPosition(missionBehaviourInstance.Mission.Scene, formationNewPosition);
-            return formationNewWorldPos;
-        }
-
-        // Calculate WorldPosition ten paces in front of FrontAttachmentPoint (Cumulative) with Fwd/Lateral Offset (Fwd/Back, Left/Right)
-        // Used for Custom Army Formations at the beginning of a battle.
+        // Calculate WorldPosition of the formation's FrontAttachmentPoint (Cumulative) with Fwd/Lateral Offset (Fwd/Back, Left/Right)
         private static WorldPosition CalcWorldPosFrontAttPtOffset(Formation formation, MissionBehaviour missionBehaviourInstance, float latOffset, float fwdOffset)
         {
             float moveX = formation.Direction.x * fwdOffset;
