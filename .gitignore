@@ -259,3 +259,9 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/TroopTree_Screenshot_centurion.png
+/TroopManagement_Screenshot_velites.png
+/Launcher_Mods_Setup_Screenshot.png
+/Formation_Screenshot_checkerboard_closeup.png
+/Formation_Screenshot_checkerboard2.png
+/Formation_Screenshot_checkerboard.png

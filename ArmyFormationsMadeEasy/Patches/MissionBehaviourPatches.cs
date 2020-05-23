@@ -41,6 +41,8 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool CustomArmyFormationParamsSet { get; set; } = false;
         public static List<CustomArmyFormation> CustomArmyFormations { get; set; } = new List<CustomArmyFormation>();
 
+        private static Helpers helpersInstance = new Helpers();
+
         // Enable the Mod if it's enabled in the in-game Mod Options
         static bool Prepare()
         {
@@ -1286,17 +1288,21 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.InfantryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.InfantryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.InfantryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.InfantryFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.InfantryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.InfantryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.InfantryFormOrderNum);
                         }
                         else if (formation.FormationIndex == FormationClass.Ranged)
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.RangedArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.RangedArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.RangedArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.RangedFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.RangedFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.RangedFormOrder = helpersInstance.GetFormOrder(customArmyFormation.RangedFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.RangedStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1306,9 +1312,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.CavalryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.CavalryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.CavalryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.CavalryFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.CavalryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.CavalryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.CavalryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.CavalryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1318,9 +1326,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.HorseArcherArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.HorseArcherArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.HorseArcherArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.HorseArcherFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.HorseArcherFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.HorseArcherFormOrder = helpersInstance.GetFormOrder(customArmyFormation.HorseArcherFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.HorseArcherStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1330,9 +1340,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.SkirmisherArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.SkirmisherArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.SkirmisherArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.SkirmisherFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.SkirmisherFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.SkirmisherFormOrder = helpersInstance.GetFormOrder(customArmyFormation.SkirmisherFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.SkirmisherStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1342,9 +1354,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.HeavyInfantryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.HeavyInfantryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.HeavyInfantryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.HeavyInfantryFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.HeavyInfantryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.HeavyInfantryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.HeavyInfantryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.HeavyInfantryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1354,9 +1368,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.LightCavalryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.LightCavalryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.LightCavalryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.LightCavalryFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.LightCavalryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.LightCavalryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.LightCavalryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.LightCavalryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1366,9 +1382,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.HeavyCavalryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
+                            customArmyFormation.HeavyCavalryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.HeavyCavalryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.HeavyCavalryFormOrderNum = GetCurFormOrderNum(formation);
+                            customArmyFormation.HeavyCavalryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.HeavyCavalryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.HeavyCavalryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.HeavyCavalryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1382,14 +1400,7 @@ namespace ArmyFormationsMadeEasy.Patches
             }
         }
 
-        // Get the converted FormOrder number from the given formation - (Formation Width)
-        private static int GetCurFormOrderNum(Formation formation)
-        {
-            return (int)formation.FormOrder.OrderType == 29 ? -3 : // 'FormWider' = 'PresetWider' in UI
-                   (int)formation.FormOrder.OrderType == 28 ? -2 : // 'FormWide'  = 'PresetWide' in UI
-                   (int)formation.FormOrder.OrderType == 27 ? -1 : // 'FormDeep'  = 'PresetDeep' in UI
-                   (int)formation.Width;                           // 'FormCustom' = 'CustomWidth' in UI
-        }
+        
 
         // Get Lateral and Forward offsets of formation relative to MainFormation (I)
         private static Vec2 GetCurLatFwdPosRelToMainFormation(Formation mainFormation, Formation formation)
@@ -1398,24 +1409,17 @@ namespace ArmyFormationsMadeEasy.Patches
             double formationPosY = formation.CurrentPosition.Y;
             double mainFormationPosX = mainFormation.CurrentPosition.X;
             double mainFormationPosY = mainFormation.CurrentPosition.Y;
-            double alpha = mainFormation.Direction.RotationInRadians;
-            
+            double alpha = Math.Atan2(mainFormation.Direction.Y, mainFormation.Direction.X);// - (90 * Math.PI / 180);
+
             //step 1: 
             formationPosX -= mainFormationPosX;
             formationPosY -= mainFormationPosY;
 
             // step 2
-            double xRot = formationPosX * Math.Cos(alpha) - formationPosY * Math.Sin(alpha);
-            double yRot = formationPosX * Math.Sin(alpha) + formationPosY * Math.Cos(alpha);
+            double xRot = formationPosX * Math.Sin(alpha) - formationPosY * Math.Cos(alpha);
+            double yRot = formationPosX * Math.Cos(alpha) + formationPosY * Math.Sin(alpha);
 
-            // step 3:
-            formationPosX = xRot + mainFormationPosX;
-            formationPosY = yRot + mainFormationPosY;
-
-            float latOffset = (float)formationPosX - (float)mainFormationPosX;
-            float fwdOffset = (float)formationPosY - (float)mainFormationPosY;
-
-            return new Vec2(latOffset, fwdOffset);
+            return new Vec2((float)xRot, (float)yRot);
         }
 
 
@@ -1627,6 +1631,15 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 return FormOrder.FormOrderWide;
             }
+        }
+
+        // Get the converted FormOrder number from the given formation - (Formation Width)
+        public int GetCurFormOrderNum(Formation formation)
+        {
+            return (int)formation.FormOrder.OrderType == 29 ? -3 : // 'FormWider' = 'PresetWider' in UI
+                   (int)formation.FormOrder.OrderType == 28 ? -2 : // 'FormWide'  = 'PresetWide' in UI
+                   (int)formation.FormOrder.OrderType == 27 ? -1 : // 'FormDeep'  = 'PresetDeep' in UI
+                   (int)formation.Width;                           // 'FormCustom' = 'CustomWidth' in UI
         }
     }
 
