@@ -42,6 +42,25 @@ namespace ArmyFormationsMadeEasy
         public int FallbackYPaces { get; set; } = -10;
 
         [XmlElement]
+        [SettingProperty("Allow 'Reduce Unit Speed Limit'", "(Default: press minus(-)) Multiply last selected units Max Speed by input amount.")]
+        [SettingPropertyGroup("Allow 'Reduce Unit Speed Limit'   (Default: press minus(-)", true)]
+        public bool SpeedLimitReductionEnabled { get; set; } = true;
+        [XmlElement]
+        [SettingProperty("Speed Multiplier", 0, 1, "(Default: press minus(-)) Multiply last selected units Max Speed by input amount. Default: 'Speed Multiplier'= 0.25f")]
+        [SettingPropertyGroup("Allow 'Reduce Unit Speed Limit'   (Default: press minus(-)")]
+        public float SpeedLimitReductionAmount { get; set; } = 0.25f;
+
+        public bool AllAgentsWalk { get; set; } = false;
+        public float InfantryMaxSpeedModifier { get; set; } = 1;
+        public float RangedMaxSpeedModifier { get; set; } = 1;
+        public float CavalryMaxSpeedModifier { get; set; } = 1;
+        public float HorseArcherMaxSpeedModifier { get; set; } = 1;
+        public float SkirmisherMaxSpeedModifier { get; set; } = 1;
+        public float HeavyInfantryMaxSpeedModifier { get; set; } = 1;
+        public float LightCavalryMaxSpeedModifier { get; set; } = 1;
+        public float HeavyCavalryMaxSpeedModifier { get; set; } = 1;
+
+        [XmlElement]
         [SettingProperty("Enable Custom Army Formations", "First Enabled Formation uses F11 key. Second Enabled Formation uses F12 key. Automatically moves all units to their custom army formation positions relative to first available formation index - default is Infantry(I).")]
         /*[SettingPropertyGroup("Allow Custom Army Formations - press F11 or F12", true)]*/
         public bool CustomArmyFormationsModEnabled { get; set; } = true;

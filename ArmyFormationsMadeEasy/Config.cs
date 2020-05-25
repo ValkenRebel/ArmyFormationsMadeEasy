@@ -12,6 +12,13 @@ namespace ArmyFormationsMadeEasy
     {
         public static ModuleInfo ModInfo => Instance.InstanceModInfo;
 
+        [XmlElement("IncreaseUnitSpeedLimitKey")]
+        public int InstanceIncreaseUnitSpeedLimitKey { get; set; } = (int)InputKey.Equals;
+        public static InputKey ResetUnitSpeedLimitKey => (InputKey)Instance.InstanceIncreaseUnitSpeedLimitKey;
+        [XmlElement("ReduceUnitSpeedLimitKey")]
+        public int InstanceReduceUnitSpeedLimitKey { get; set; } = (int)InputKey.Minus;
+        public static InputKey ReduceUnitSpeedLimitKey => (InputKey)Instance.InstanceReduceUnitSpeedLimitKey;
+
         [XmlElement("AdvanceSelectedKey")]
         public int InstanceAdvanceSelectedKey { get; set; } = (int)InputKey.F9;
         public static InputKey AdvanceSelectedKey => (InputKey)Instance.InstanceAdvanceSelectedKey;

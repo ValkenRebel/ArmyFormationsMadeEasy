@@ -22,6 +22,8 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool RAltKeyPressed { get; set; } = false;
         public static bool RCtrlKeyPressed { get; set; } = false;
         public static bool RShiftKeyPressed { get; set; } = false;
+        public static bool ResetUnitSpeedLimitKeyPressed { get; set; } = false;
+        public static bool ReduceUnitSpeedLimitKeyPressed { get; set; } = false;
         public static bool AdvanceSelectedKeyPressed { get; set; } = false;
         public static bool FallbackSelectedKeyPressed { get; set; } = false;
         public static bool CustomFormation1KeyPressed { get; set; } = false;
@@ -68,6 +70,60 @@ namespace ArmyFormationsMadeEasy.Patches
 
             // Update if Alt, Ctrl, or Shift are currently held down (Left & Right)
             UpdateAltKeyStates();
+
+
+            // 'Default: equals(=)' - Reset selected units MaxSpeedLimit back to 100%.
+            if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyPressed(Config.ResetUnitSpeedLimitKey) && !ResetUnitSpeedLimitKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    ModifySelectedMaxSpeedLimit(__instance, 1);
+
+                    // Success message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Quick March!"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    Settings.Instance.AllAgentsWalk = false;
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("All enemy units can now charge.'"));
+                }
+                // Prevent repeat - until 'ResetUnitSpeedLimitKey' has been released
+                ResetUnitSpeedLimitKeyPressed = true;
+            }
+            else if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyReleased(Config.ResetUnitSpeedLimitKey) && ResetUnitSpeedLimitKeyPressed)
+            {
+                // Allow 'ResetUnitSpeedLimitKey' press to be registered once again
+                ResetUnitSpeedLimitKeyPressed = false;
+            }
+
+            // 'Default: minus(-)' - Reduce (multiply) selected units MaxSpeedLimit by the amount set in 'Mod Options' settings.
+            if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyPressed(Config.ReduceUnitSpeedLimitKey) && !ReduceUnitSpeedLimitKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    ModifySelectedMaxSpeedLimit(__instance, Settings.Instance.SpeedLimitReductionAmount);
+
+                    // Success message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Slow March!"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    Settings.Instance.AllAgentsWalk = true;
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("All enemy units must walk, unless routed.'"));
+                }
+                // Prevent repeat - until 'ReduceUnitSpeedLimitKey' has been released
+                ReduceUnitSpeedLimitKeyPressed = true;
+            }
+            else if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyReleased(Config.ReduceUnitSpeedLimitKey) && ReduceUnitSpeedLimitKeyPressed)
+            {
+                // Allow 'ReduceUnitSpeedLimitKey' press to be registered once again
+                ReduceUnitSpeedLimitKeyPressed = false;
+            }
+
 
             // 'Default: F9' - Advance selected formations 'y' paces forward
             if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyPressed(Config.AdvanceSelectedKey) && !AdvanceSelectedKeyPressed)
@@ -1142,7 +1198,51 @@ namespace ArmyFormationsMadeEasy.Patches
             WorldPosition relWorldPos = new WorldPosition(missionBehaviourInstance.Mission.Scene, relPosition);
             return relWorldPos;
         }
-        
+
+
+        // Reduce Selected units Max Speed Limit
+        private static void ModifySelectedMaxSpeedLimit(MissionBehaviour missionBehaviourInstance, float modifierSpeedLimitMax)
+        {
+            MBReadOnlyList<Formation> SelectedFormationsList = missionBehaviourInstance.Mission.PlayerTeam.PlayerOrderController.SelectedFormations;
+
+            foreach (Formation formation in SelectedFormationsList)
+            {
+                if (formation.FormationIndex == FormationClass.Infantry)
+                {
+                    Settings.Instance.InfantryMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.Ranged)
+                {
+                    Settings.Instance.RangedMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.Cavalry)
+                {
+                    Settings.Instance.CavalryMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.HorseArcher)
+                {
+                    Settings.Instance.HorseArcherMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.Skirmisher)
+                {
+                    Settings.Instance.SkirmisherMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.HeavyInfantry)
+                {
+                    Settings.Instance.HeavyInfantryMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.LightCavalry)
+                {
+                    Settings.Instance.LightCavalryMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+                else if (formation.FormationIndex == FormationClass.HeavyCavalry)
+                {
+                    Settings.Instance.HeavyCavalryMaxSpeedModifier = modifierSpeedLimitMax;
+                }
+            }
+        }
+
+
         // Move selected units to the given Custom Army Formation positions
         private static void MoveSelectedToCustArmyFormPos(CustomArmyFormation customArmyFormation, MissionBehaviour missionBehaviourInstance, float extraLatOffset, float extraFwdOffset)
         {
@@ -1161,6 +1261,10 @@ namespace ArmyFormationsMadeEasy.Patches
                     {
                         foreach (Formation formation in team.Formations)
                         {
+                            /*** TO-DO: Allow speed limits to be adjusted.                                          ***/
+                            /*** formation.Team.ActiveAgents[i].SetMaximumSpeedLimit()                              ***/
+                            //   formation.Team.ActiveAgents[0].UpdateSpawnEquipmentAndRefreshVisuals(Equipment equipment);
+
                             // Halt the MainFormation & move each formation in Army to a position relative to MainFormation's new position (default Infantry)
                             if (formation == team.Formations.First())
                             {
