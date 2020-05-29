@@ -46,11 +46,14 @@ namespace ArmyFormationsMadeEasy
         [SettingPropertyGroup("Allow 'Reduce Unit Speed Limit'   (Default: press minus(-)", true)]
         public bool SpeedLimitReductionEnabled { get; set; } = true;
         [XmlElement]
-        [SettingProperty("Speed Multiplier", 0, 1, "(Default: press minus(-)) Multiply last selected units Max Speed by input amount. Default: 'Speed Multiplier'= 0.25f")]
+        [SettingProperty("Speed Multiplier", 0, 1, "(press Ctrl + equals(=) to reset) Multiply last selected units Max Speed by input amount. Default: 'Speed Multiplier'= 0.25f")]
         [SettingPropertyGroup("Allow 'Reduce Unit Speed Limit'   (Default: press minus(-)")]
         public float SpeedLimitReductionAmount { get; set; } = 0.25f;
+        [XmlElement]
+        [SettingProperty("Allow 'Force Enemy/Ally To Walk'", 0, 1, "(Default: press Ctrl + minus(-) or Ctrl + equals(=)) Multiply Enemy/Ally units Max Speed by input amount. Default: 'Speed Multiplier'= 0.25f")]
+        [SettingPropertyGroup("Allow 'Reduce Unit Speed Limit'   (Default: press minus(-)")]
+        public bool AllAgentsWalk { get; set; } = true;
 
-        public bool AllAgentsWalk { get; set; } = false;
         public float InfantryMaxSpeedModifier { get; set; } = 1;
         public float RangedMaxSpeedModifier { get; set; } = 1;
         public float CavalryMaxSpeedModifier { get; set; } = 1;
