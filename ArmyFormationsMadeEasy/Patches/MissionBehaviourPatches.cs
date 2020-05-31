@@ -22,6 +22,7 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool RAltKeyPressed { get; set; } = false;
         public static bool RCtrlKeyPressed { get; set; } = false;
         public static bool RShiftKeyPressed { get; set; } = false;
+        public static bool EpicBattlesAIToggleKeyPressed { get; set; } = false;
         public static bool ResetUnitSpeedLimitKeyPressed { get; set; } = false;
         public static bool ReduceUnitSpeedLimitKeyPressed { get; set; } = false;
         public static bool AdvanceSelectedKeyPressed { get; set; } = false;
@@ -43,6 +44,31 @@ namespace ArmyFormationsMadeEasy.Patches
 
         private static Helpers helpersInstance = new Helpers();
 
+
+        #region Epic Battle AI
+        public static bool EpicBattleAIActive { get; set; } = false;
+        public static bool EpicBattleAIPhase1Active { get; set; } = false;
+        public static bool EpicBattleAIPhase1Completed { get; set; } = false;
+        public static Formation EnemyMainFormation { get; set; } = null;
+        public static WorldPosition EpicBattleAIPhase1DestinationPos { get; set; } = new WorldPosition();
+        public static float Phase1DestinationOffsetDistance { get; set; } = 175f;
+        public static float EpicBattleAIDelayPhase2Seconds { get; set; } = 30f;
+        public static MissionTime EpicBattleAIPhase2DelayTime;
+        public static bool EpicBattleAIPhase2Active { get; set; } = false;
+        public static bool EpicBattleAIPhase2Completed { get; set; } = false;
+        public static float Phase2DestinationOffsetDistance { get; set; } = 30f;
+        public static float EpicBattleAIDelayPhase3Seconds { get; set; } = 30f;
+        public static MissionTime EpicBattleAIPhase3DelayTime;
+        public static bool EpicBattleAIPhase3Active { get; set; } = false;
+        public static bool EpicBattleAIPhase3Completed { get; set; } = false;
+        public static float Phase3DestinationOffsetDistance { get; set; } = 100f;
+        public static float EpicBattleAIDelayPhase4Seconds { get; set; } = 100f;
+        public static MissionTime EpicBattleAIPhase4DelayTime;
+        public static bool EpicBattleAIPhase4Active { get; set; } = false;
+        public static bool EpicBattleAIPhase4Completed { get; set; } = false;
+        #endregion
+
+
         // Enable the Mod if it's enabled in the in-game Mod Options
         static bool Prepare()
         {
@@ -62,417 +88,17 @@ namespace ArmyFormationsMadeEasy.Patches
             // Update if Alt, Ctrl, or Shift are currently held down (Left & Right)
             UpdateAltKeyStates();
 
+            // Handle user inputs
+            ManageKeyInputs(__instance);
 
-            // 'Default: equals(=)' - Reset selected units MaxSpeedLimit back to 100%.
-            if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyPressed(Config.ResetUnitSpeedLimitKey) && !ResetUnitSpeedLimitKeyPressed)
+            // Epic Battle AI Tick
+            if (Settings.Instance.AllowEpicBattlesAI && EpicBattleAIActive)
             {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    ModifySelectedMaxSpeedLimit(__instance, 1);
-
-                    // Success message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Quick March!"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    Settings.Instance.AllAgentsWalk = false;
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("All enemy units can now charge.'"));
-                }
-                // Prevent repeat - until 'ResetUnitSpeedLimitKey' has been released
-                ResetUnitSpeedLimitKeyPressed = true;
+                EpicBattleAITick(__instance);
             }
-            else if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyReleased(Config.ResetUnitSpeedLimitKey) && ResetUnitSpeedLimitKeyPressed)
+            else
             {
-                // Allow 'ResetUnitSpeedLimitKey' press to be registered once again
-                ResetUnitSpeedLimitKeyPressed = false;
-            }
-
-            // 'Default: minus(-)' - Reduce (multiply) selected units MaxSpeedLimit by the amount set in 'Mod Options' settings.
-            if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyPressed(Config.ReduceUnitSpeedLimitKey) && !ReduceUnitSpeedLimitKeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    ModifySelectedMaxSpeedLimit(__instance, Settings.Instance.SpeedLimitReductionAmount);
-
-                    // Success message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Slow March!"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    Settings.Instance.AllAgentsWalk = true;
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("All enemy units must walk, unless routed.'"));
-                }
-                // Prevent repeat - until 'ReduceUnitSpeedLimitKey' has been released
-                ReduceUnitSpeedLimitKeyPressed = true;
-            }
-            else if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyReleased(Config.ReduceUnitSpeedLimitKey) && ReduceUnitSpeedLimitKeyPressed)
-            {
-                // Allow 'ReduceUnitSpeedLimitKey' press to be registered once again
-                ReduceUnitSpeedLimitKeyPressed = false;
-            }
-
-
-            // 'Default: F9' - Advance selected formations 'y' paces forward
-            if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyPressed(Config.AdvanceSelectedKey) && !AdvanceSelectedKeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown &&  __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    if (CustomFormation1KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 1' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[0], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation2KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 2' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[1], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation3KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 3' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[2], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation4KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 4' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[3], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation5KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 5' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[4], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation6KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 6' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[5], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation7KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 7' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[6], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else if (CustomFormation8KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 8' positions, but shift forward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[7], __instance, 0, Settings.Instance.AdvanceYPaces);
-                    }
-                    else // Advance Selected formations Y paces
-                    {
-                        SelectedFormationsAdvanceYPaces(__instance);
-                    }
-
-                    // Success message
-                    int y = Settings.Instance.AdvanceYPaces;
-                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Advance " + y + " paces!"));
-                }
-                // Prevent repeat - until 'AdvanceSelectedKey' has been released
-                AdvanceSelectedKeyPressed = true;
-            }
-            else if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyReleased(Config.AdvanceSelectedKey) && AdvanceSelectedKeyPressed)
-            {
-                // Allow 'AdvanceSelectedKey' press to be registered once again
-                AdvanceSelectedKeyPressed = false;
-            }
-
-            // 'Default: F10' - Fallback selected formations 'y' paces backwards
-            if (Settings.Instance.FallbackYPacesEnabled && Input.IsKeyPressed(Config.FallbackSelectedKey) && !FallbackSelectedKeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    if (CustomFormation1KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 1' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[0], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation2KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 2' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[1], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation3KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 3' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[2], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation4KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 4' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[3], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation5KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 5' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[4], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation6KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 6' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[5], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation7KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 7' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[6], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else if (CustomFormation8KeyPressed)
-                    {
-                        // Move selected units to 'Custom Army Formation 8' positions, but shift backward 'y' paces
-                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[7], __instance, 0, Settings.Instance.FallbackYPaces);
-                    }
-                    else // Fallback Selected formations Y paces
-                    {
-                        SelectedFormationsFallbackYPaces(__instance);
-                    }
-
-                    // Success message
-                    int y = Math.Abs(Settings.Instance.FallbackYPaces);
-                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Fallback " + y + " paces!"));
-
-                }
-                // Prevent repeat - until 'FallbackSelectedKey' has been released
-                FallbackSelectedKeyPressed = true;
-            }
-            else if (Settings.Instance.FallbackYPacesEnabled && Input.IsKeyReleased(Config.FallbackSelectedKey) && FallbackSelectedKeyPressed)
-            {
-                // Allow 'FallbackSelectedKey' press to be registered once again
-                FallbackSelectedKeyPressed = false;
-            }
-
-            // 'Default: F11' - Move selected units to 'Custom Army Formation 1' positions
-            if (Settings.Instance.CustomArmyFormation00Enabled && Input.IsKeyPressed(Config.CustomFormation1Key) && !CustomFormation1KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move selected units to 'Custom Army Formation 1' positions (Default: F11)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[0], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 1'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 1' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[0], __instance); 
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 1'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation1Key' has been released
-                CustomFormation1KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation00Enabled && Input.IsKeyReleased(Config.CustomFormation1Key) && CustomFormation1KeyPressed)
-            {
-                // Allow 'CustomFormation1Key' press to be registered once again
-                CustomFormation1KeyPressed = false;
-            }
-
-            // 'Default: F12' - Move Selected units to 'Custom Army Formation 2' positions
-            if (Settings.Instance.CustomArmyFormation01Enabled && Input.IsKeyPressed(Config.CustomFormation2Key) && !CustomFormation2KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 2' positions (Default: F12)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[1], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 2'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 2' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[1], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 2'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation2Key' has been released
-                CustomFormation2KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation01Enabled && Input.IsKeyReleased(Config.CustomFormation2Key) && CustomFormation2KeyPressed)
-            {
-                // Allow 'CustomFormation2Key' press to be registered once again
-                CustomFormation2KeyPressed = false;
-            }
-
-            // 'Default: NumPad5' - Move Selected units to 'Custom Army Formation 3' positions
-            if (Settings.Instance.CustomArmyFormation02Enabled && Input.IsKeyPressed(Config.CustomFormation3Key) && !CustomFormation3KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 3' positions (Default: NumPad5)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[2], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 3'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 3' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[2], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 3'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation3Key' has been released
-                CustomFormation3KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation02Enabled && Input.IsKeyReleased(Config.CustomFormation3Key) && CustomFormation3KeyPressed)
-            {
-                // Allow 'CustomFormation3Key' press to be registered once again
-                CustomFormation3KeyPressed = false;
-            }
-
-            // 'Default: NumPad6' - Move Selected units to 'Custom Army Formation 4' positions
-            if (Settings.Instance.CustomArmyFormation03Enabled && Input.IsKeyPressed(Config.CustomFormation4Key) && !CustomFormation4KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 4' positions (Default: NumPad6)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[3], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 4'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 4' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[3], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 4'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation4Key' has been released
-                CustomFormation4KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation03Enabled && Input.IsKeyReleased(Config.CustomFormation4Key) && CustomFormation4KeyPressed)
-            {
-                // Allow 'CustomFormation4Key' press to be registered once again
-                CustomFormation4KeyPressed = false;
-            }
-
-            // 'Default: NumPad7' - Move Selected units to 'Custom Army Formation 5' positions
-            if (Settings.Instance.CustomArmyFormation04Enabled && Input.IsKeyPressed(Config.CustomFormation5Key) && !CustomFormation5KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 5' positions (Default: NumPad7)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[4], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 5'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 5' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[4], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 5'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation5Key' has been released
-                CustomFormation5KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation04Enabled && Input.IsKeyReleased(Config.CustomFormation5Key) && CustomFormation5KeyPressed)
-            {
-                // Allow 'CustomFormation5Key' press to be registered once again
-                CustomFormation5KeyPressed = false;
-            }
-
-            // 'Default: NumPad8' - Move Selected units to 'Custom Army Formation 6' positions
-            if (Settings.Instance.CustomArmyFormation05Enabled && Input.IsKeyPressed(Config.CustomFormation6Key) && !CustomFormation6KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 6' positions (Default: NumPad8)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[5], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 6'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 6' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[5], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 6'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation6Key' has been released
-                CustomFormation6KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation05Enabled && Input.IsKeyReleased(Config.CustomFormation6Key) && CustomFormation6KeyPressed)
-            {
-                // Allow 'CustomFormation6Key' press to be registered once again
-                CustomFormation6KeyPressed = false;
-            }
-
-            // 'Default: NumPad9' - Move Selected units to 'Custom Army Formation 7' positions
-            if (Settings.Instance.CustomArmyFormation06Enabled && Input.IsKeyPressed(Config.CustomFormation7Key) && !CustomFormation7KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 7' positions (Default: NumPad9)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[6], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 7'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 7' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[6], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 7'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation7Key' has been released
-                CustomFormation7KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation06Enabled && Input.IsKeyReleased(Config.CustomFormation7Key) && CustomFormation7KeyPressed)
-            {
-                // Allow 'CustomFormation7Key' press to be registered once again
-                CustomFormation7KeyPressed = false;
-            }
-
-            // 'Default: NumPad0' - Move Selected units to 'Custom Army Formation 8' positions
-            if (Settings.Instance.CustomArmyFormation07Enabled && Input.IsKeyPressed(Config.CustomFormation8Key) && !CustomFormation8KeyPressed)
-            {
-                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Move Selected units to 'Custom Army Formation 8' positions (Default: NumPad0)
-                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[7], __instance, 0, 0);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 8'"));
-                }
-                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
-                {
-                    // Save all formation's current position/arrangement to 'Custom Army Formation 8' positions
-                    SaveAllToCustArmyForm(CustomArmyFormations[7], __instance);
-
-                    // Display message
-                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 8'"));
-                }
-
-                // Prevent repeat - until 'CustomFormation8Key' has been released
-                CustomFormation8KeyPressed = true;
-            }
-            else if (Settings.Instance.CustomArmyFormation07Enabled && Input.IsKeyReleased(Config.CustomFormation8Key) && CustomFormation8KeyPressed)
-            {
-                // Allow 'CustomFormation8Key' press to be registered once again
-                CustomFormation8KeyPressed = false;
+                EpicBattleAIReset();
             }
         }
 
@@ -759,6 +385,41 @@ namespace ArmyFormationsMadeEasy.Patches
                                                                                 Settings.Instance.CustomArmyFormation07HeavyCavalryStartPosFwdOffset
                                                                                 );
             CustomArmyFormations.Add(customArmyFormation07);
+
+            CustomArmyFormation customArmyFormation08 = new CustomArmyFormation(8,
+                                                                                true,   //Settings.Instance.CustomArmyFormation07Enabled,
+                                                                                5,      //Settings.Instance.CustomArmyFormation07InfantryArrangementOrder,
+                                                                                -2,     //Settings.Instance.CustomArmyFormation07InfantryFormOrder,
+                                                                                3,      //Settings.Instance.CustomArmyFormation07RangedArrangementOrder,
+                                                                                -2,     //Settings.Instance.CustomArmyFormation07RangedFormOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07RangedStartPosLateralOffset,
+                                                                                20,    //Settings.Instance.CustomArmyFormation07RangedStartPosFwdOffset,
+                                                                                -1,     //Settings.Instance.CustomArmyFormation07CavalryArrangementOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07CavalryFormOrder,
+                                                                                -60,     //Settings.Instance.CustomArmyFormation07CavalryStartPosLateralOffset,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07CavalryStartPosFwdOffset,
+                                                                                -1,     //Settings.Instance.CustomArmyFormation07HorseArcherArrangementOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07HorseArcherFormOrder,
+                                                                                60,    //Settings.Instance.CustomArmyFormation07HorseArcherStartPosLateralOffset,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07HorseArcherStartPosFwdOffset,
+                                                                                5,      //Settings.Instance.CustomArmyFormation07SkirmisherArrangementOrder,
+                                                                                -2,     //Settings.Instance.CustomArmyFormation07SkirmisherFormOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07SkirmisherStartPosLateralOffset,
+                                                                                -10,     //Settings.Instance.CustomArmyFormation07SkirmisherStartPosFwdOffset,
+                                                                                5,      //Settings.Instance.CustomArmyFormation07HeavyInfantryArrangementOrder,
+                                                                                -2,     //Settings.Instance.CustomArmyFormation07HeavyInfantryFormOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07HeavyInfantryStartPosLateralOffset,
+                                                                                10,    //Settings.Instance.CustomArmyFormation07HeavyInfantryStartPosFwdOffset,
+                                                                                5,      //Settings.Instance.CustomArmyFormation07LightCavalryArrangementOrder,
+                                                                                -2,     //Settings.Instance.CustomArmyFormation07LightCavalryFormOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07LightCavalryStartPosLateralOffset,
+                                                                                25,    //Settings.Instance.CustomArmyFormation07LightCavalryStartPosFwdOffset,
+                                                                                5,      //Settings.Instance.CustomArmyFormation07HeavyCavalryArrangementOrder,
+                                                                                -2,     //Settings.Instance.CustomArmyFormation07HeavyCavalryFormOrder,
+                                                                                0,      //Settings.Instance.CustomArmyFormation07HeavyCavalryStartPosLateralOffset,
+                                                                                35     //Settings.Instance.CustomArmyFormation07HeavyCavalryStartPosFwdOffset
+                                                                                );
+            CustomArmyFormations.Add(customArmyFormation08);
         }
 
         // Update Settings.Instance - with the CustomArmyFormations List's current settings
@@ -1119,27 +780,477 @@ namespace ArmyFormationsMadeEasy.Patches
             }
         }
 
+        // Key Input Manager - handle user inputs
+        private static void ManageKeyInputs(MissionBehaviour __instance)
+        {
+            // 'Default: PageUp' - Toggle Epic Battle AI (Custom Enemy AI) active/deactive.
+            if (Settings.Instance.AllowEpicBattlesAI && Input.IsKeyPressed(Config.EpicBattlesAIToggleKey) && !EpicBattlesAIToggleKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null)
+                {
+                    // Toggle Epic Battle AI
+                    EpicBattleAIActive = !EpicBattleAIActive;
+
+                    // Display message
+                    if (EpicBattleAIActive)
+                    {
+                        InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Enabled"));
+                    }
+                    else
+                    {
+                        InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Disabled"));
+                    }
+                }
+
+                // Prevent repeat - until 'EpicBattlesAIToggleKey' has been released
+                EpicBattlesAIToggleKeyPressed = true;
+            }
+            else if (Settings.Instance.AllowEpicBattlesAI && Input.IsKeyReleased(Config.EpicBattlesAIToggleKey) && EpicBattlesAIToggleKeyPressed)
+            {
+                // Allow 'EpicBattlesAIToggleKey' press to be registered once again
+                EpicBattlesAIToggleKeyPressed = false;
+            }
+
+            // 'Default: equals(=)' - Reset selected units MaxSpeedLimit back to 100%.
+            if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyPressed(Config.ResetUnitSpeedLimitKey) && !ResetUnitSpeedLimitKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    ModifySelectedMaxSpeedLimit(__instance, 1);
+
+                    // Success message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Quick March!"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    Settings.Instance.AllAgentsWalk = false;
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("All enemy units can now charge.'"));
+                }
+                // Prevent repeat - until 'ResetUnitSpeedLimitKey' has been released
+                ResetUnitSpeedLimitKeyPressed = true;
+            }
+            else if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyReleased(Config.ResetUnitSpeedLimitKey) && ResetUnitSpeedLimitKeyPressed)
+            {
+                // Allow 'ResetUnitSpeedLimitKey' press to be registered once again
+                ResetUnitSpeedLimitKeyPressed = false;
+            }
+
+            // 'Default: minus(-)' - Reduce (multiply) selected units MaxSpeedLimit by the amount set in 'Mod Options' settings.
+            if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyPressed(Config.ReduceUnitSpeedLimitKey) && !ReduceUnitSpeedLimitKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    ModifySelectedMaxSpeedLimit(__instance, Settings.Instance.SpeedLimitReductionAmount);
+
+                    // Success message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Slow March!"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    Settings.Instance.AllAgentsWalk = true;
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("All enemy units must walk, unless routed.'"));
+                }
+                // Prevent repeat - until 'ReduceUnitSpeedLimitKey' has been released
+                ReduceUnitSpeedLimitKeyPressed = true;
+            }
+            else if (Settings.Instance.SpeedLimitReductionEnabled && Input.IsKeyReleased(Config.ReduceUnitSpeedLimitKey) && ReduceUnitSpeedLimitKeyPressed)
+            {
+                // Allow 'ReduceUnitSpeedLimitKey' press to be registered once again
+                ReduceUnitSpeedLimitKeyPressed = false;
+            }
+
+
+            // 'Default: F9' - Advance selected formations 'y' paces forward
+            if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyPressed(Config.AdvanceSelectedKey) && !AdvanceSelectedKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    if (CustomFormation1KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 1' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[0], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation2KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 2' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[1], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation3KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 3' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[2], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation4KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 4' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[3], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation5KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 5' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[4], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation6KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 6' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[5], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation7KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 7' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[6], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else if (CustomFormation8KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 8' positions, but shift forward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[7], __instance, 0, Settings.Instance.AdvanceYPaces);
+                    }
+                    else // Advance Selected formations Y paces
+                    {
+                        SelectedFormationsAdvanceYPaces(__instance);
+                    }
+
+                    // Success message
+                    int y = Settings.Instance.AdvanceYPaces;
+                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Advance " + y + " paces!"));
+                }
+                // Prevent repeat - until 'AdvanceSelectedKey' has been released
+                AdvanceSelectedKeyPressed = true;
+            }
+            else if (Settings.Instance.AdvanceYPacesEnabled && Input.IsKeyReleased(Config.AdvanceSelectedKey) && AdvanceSelectedKeyPressed)
+            {
+                // Allow 'AdvanceSelectedKey' press to be registered once again
+                AdvanceSelectedKeyPressed = false;
+            }
+
+            // 'Default: F10' - Fallback selected formations 'y' paces backwards
+            if (Settings.Instance.FallbackYPacesEnabled && Input.IsKeyPressed(Config.FallbackSelectedKey) && !FallbackSelectedKeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    if (CustomFormation1KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 1' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[0], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation2KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 2' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[1], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation3KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 3' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[2], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation4KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 4' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[3], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation5KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 5' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[4], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation6KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 6' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[5], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation7KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 7' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[6], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else if (CustomFormation8KeyPressed)
+                    {
+                        // Move selected units to 'Custom Army Formation 8' positions, but shift backward 'y' paces
+                        MoveSelectedToCustArmyFormPos(CustomArmyFormations[7], __instance, 0, Settings.Instance.FallbackYPaces);
+                    }
+                    else // Fallback Selected formations Y paces
+                    {
+                        SelectedFormationsFallbackYPaces(__instance);
+                    }
+
+                    // Success message
+                    int y = Math.Abs(Settings.Instance.FallbackYPaces);
+                    InformationManager.DisplayMessage(new InformationMessage("Selected formations: Fallback " + y + " paces!"));
+
+                }
+                // Prevent repeat - until 'FallbackSelectedKey' has been released
+                FallbackSelectedKeyPressed = true;
+            }
+            else if (Settings.Instance.FallbackYPacesEnabled && Input.IsKeyReleased(Config.FallbackSelectedKey) && FallbackSelectedKeyPressed)
+            {
+                // Allow 'FallbackSelectedKey' press to be registered once again
+                FallbackSelectedKeyPressed = false;
+            }
+
+            // 'Default: F11' - Move selected units to 'Custom Army Formation 1' positions
+            if (Settings.Instance.CustomArmyFormation00Enabled && Input.IsKeyPressed(Config.CustomFormation1Key) && !CustomFormation1KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move selected units to 'Custom Army Formation 1' positions (Default: F11)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[0], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 1'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 1' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[0], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 1'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation1Key' has been released
+                CustomFormation1KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation00Enabled && Input.IsKeyReleased(Config.CustomFormation1Key) && CustomFormation1KeyPressed)
+            {
+                // Allow 'CustomFormation1Key' press to be registered once again
+                CustomFormation1KeyPressed = false;
+            }
+
+            // 'Default: F12' - Move Selected units to 'Custom Army Formation 2' positions
+            if (Settings.Instance.CustomArmyFormation01Enabled && Input.IsKeyPressed(Config.CustomFormation2Key) && !CustomFormation2KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 2' positions (Default: F12)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[1], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 2'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 2' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[1], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 2'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation2Key' has been released
+                CustomFormation2KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation01Enabled && Input.IsKeyReleased(Config.CustomFormation2Key) && CustomFormation2KeyPressed)
+            {
+                // Allow 'CustomFormation2Key' press to be registered once again
+                CustomFormation2KeyPressed = false;
+            }
+
+            // 'Default: NumPad5' - Move Selected units to 'Custom Army Formation 3' positions
+            if (Settings.Instance.CustomArmyFormation02Enabled && Input.IsKeyPressed(Config.CustomFormation3Key) && !CustomFormation3KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 3' positions (Default: NumPad5)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[2], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 3'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 3' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[2], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 3'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation3Key' has been released
+                CustomFormation3KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation02Enabled && Input.IsKeyReleased(Config.CustomFormation3Key) && CustomFormation3KeyPressed)
+            {
+                // Allow 'CustomFormation3Key' press to be registered once again
+                CustomFormation3KeyPressed = false;
+            }
+
+            // 'Default: NumPad6' - Move Selected units to 'Custom Army Formation 4' positions
+            if (Settings.Instance.CustomArmyFormation03Enabled && Input.IsKeyPressed(Config.CustomFormation4Key) && !CustomFormation4KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 4' positions (Default: NumPad6)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[3], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 4'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 4' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[3], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 4'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation4Key' has been released
+                CustomFormation4KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation03Enabled && Input.IsKeyReleased(Config.CustomFormation4Key) && CustomFormation4KeyPressed)
+            {
+                // Allow 'CustomFormation4Key' press to be registered once again
+                CustomFormation4KeyPressed = false;
+            }
+
+            // 'Default: NumPad7' - Move Selected units to 'Custom Army Formation 5' positions
+            if (Settings.Instance.CustomArmyFormation04Enabled && Input.IsKeyPressed(Config.CustomFormation5Key) && !CustomFormation5KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 5' positions (Default: NumPad7)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[4], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 5'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 5' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[4], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 5'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation5Key' has been released
+                CustomFormation5KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation04Enabled && Input.IsKeyReleased(Config.CustomFormation5Key) && CustomFormation5KeyPressed)
+            {
+                // Allow 'CustomFormation5Key' press to be registered once again
+                CustomFormation5KeyPressed = false;
+            }
+
+            // 'Default: NumPad8' - Move Selected units to 'Custom Army Formation 6' positions
+            if (Settings.Instance.CustomArmyFormation05Enabled && Input.IsKeyPressed(Config.CustomFormation6Key) && !CustomFormation6KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 6' positions (Default: NumPad8)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[5], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 6'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 6' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[5], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 6'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation6Key' has been released
+                CustomFormation6KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation05Enabled && Input.IsKeyReleased(Config.CustomFormation6Key) && CustomFormation6KeyPressed)
+            {
+                // Allow 'CustomFormation6Key' press to be registered once again
+                CustomFormation6KeyPressed = false;
+            }
+
+            // 'Default: NumPad9' - Move Selected units to 'Custom Army Formation 7' positions
+            if (Settings.Instance.CustomArmyFormation06Enabled && Input.IsKeyPressed(Config.CustomFormation7Key) && !CustomFormation7KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 7' positions (Default: NumPad9)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[6], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 7'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 7' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[6], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 7'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation7Key' has been released
+                CustomFormation7KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation06Enabled && Input.IsKeyReleased(Config.CustomFormation7Key) && CustomFormation7KeyPressed)
+            {
+                // Allow 'CustomFormation7Key' press to be registered once again
+                CustomFormation7KeyPressed = false;
+            }
+
+            // 'Default: NumPad0' - Move Selected units to 'Custom Army Formation 8' positions
+            if (Settings.Instance.CustomArmyFormation07Enabled && Input.IsKeyPressed(Config.CustomFormation8Key) && !CustomFormation8KeyPressed)
+            {
+                if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Move Selected units to 'Custom Army Formation 8' positions (Default: NumPad0)
+                    MoveSelectedToCustArmyFormPos(CustomArmyFormations[7], __instance, 0, 0);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Selected units move to: 'Custom Army Formation 8'"));
+                }
+                else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
+                {
+                    // Save all formation's current position/arrangement to 'Custom Army Formation 8' positions
+                    SaveAllToCustArmyForm(CustomArmyFormations[7], __instance);
+
+                    // Display message
+                    InformationManager.DisplayMessage(new InformationMessage("Current positions/arrangements saved to: 'Custom Army Formation 8'"));
+                }
+
+                // Prevent repeat - until 'CustomFormation8Key' has been released
+                CustomFormation8KeyPressed = true;
+            }
+            else if (Settings.Instance.CustomArmyFormation07Enabled && Input.IsKeyReleased(Config.CustomFormation8Key) && CustomFormation8KeyPressed)
+            {
+                // Allow 'CustomFormation8Key' press to be registered once again
+                CustomFormation8KeyPressed = false;
+            }
+        }
+
+        // Advance currently selected formations Y paces forward (Cumulative)
+        private static void FormationsAdvanceYPaces(MissionBehaviour missionBehaviourInstance, IEnumerable<Formation> formations, float distance)
+        {
+            foreach (Formation formation in formations)
+            {
+                WorldPosition newWorldPos;
+                if (AllFormationFrontAttPtUpdated || FormationFrontAttPtUpdated[(int)formation.FormationIndex])
+                {
+                    newWorldPos = CalcWorldPosFrontAttPtOffset(formation, missionBehaviourInstance, 0, distance);
+                }
+                else
+                {
+                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, distance);
+                    // Mark this formation's FrontAttachmentPoint as having been updated for the first time, if on player's team
+                    if (formation.Team.Side == missionBehaviourInstance.Mission.MainAgent.Team.Side) 
+                        FormationFrontAttPtUpdated[(int)formation.FormationIndex] = true;
+                }
+                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+            }
+        }
 
         // Advance currently selected formations Y paces forward (Cumulative)
         private static void SelectedFormationsAdvanceYPaces(MissionBehaviour missionBehaviourInstance)
         {
             MBReadOnlyList<Formation> SelectedFormationsList = missionBehaviourInstance.Mission.PlayerTeam.PlayerOrderController.SelectedFormations;
 
-            foreach (Formation formation in SelectedFormationsList)
-            {
-                WorldPosition newWorldPos;
-                if (AllFormationFrontAttPtUpdated || FormationFrontAttPtUpdated[(int)formation.FormationIndex])
-                {
-                    newWorldPos = CalcWorldPosFrontAttPtOffset(formation, missionBehaviourInstance, 0, Settings.Instance.AdvanceYPaces);
-                }
-                else
-                {
-                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, Settings.Instance.AdvanceYPaces);
-                    // Mark this formation's FrontAttachmentPoint as having been updated for the first time
-                    FormationFrontAttPtUpdated[(int)formation.FormationIndex] = true;
-                }
-                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-            }
+            FormationsAdvanceYPaces(missionBehaviourInstance, SelectedFormationsList, Settings.Instance.AdvanceYPaces);
         }
 
         // Fallback currently selected formations Y paces backward (Cumulative)
@@ -1147,21 +1258,7 @@ namespace ArmyFormationsMadeEasy.Patches
         {
             MBReadOnlyList<Formation> SelectedFormationsList = missionBehaviourInstance.Mission.PlayerTeam.PlayerOrderController.SelectedFormations;
 
-            foreach (Formation formation in SelectedFormationsList)
-            {
-                WorldPosition newWorldPos;
-                if (AllFormationFrontAttPtUpdated || FormationFrontAttPtUpdated[(int)formation.FormationIndex])
-                {
-                    newWorldPos = CalcWorldPosFrontAttPtOffset(formation, missionBehaviourInstance, 0, Settings.Instance.FallbackYPaces);
-                }
-                else
-                {
-                    newWorldPos = CalcWorldPosRelToFormation(formation, missionBehaviourInstance, 0, Settings.Instance.FallbackYPaces);
-                    // Mark this formation's FrontAttachmentPoint as having been updated for the first time
-                    FormationFrontAttPtUpdated[(int)formation.FormationIndex] = true;
-                }
-                formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-            }
+            FormationsAdvanceYPaces(missionBehaviourInstance, SelectedFormationsList, Settings.Instance.FallbackYPaces);
         }
 
         // Calculate WorldPosition of the formation's FrontAttachmentPoint (Cumulative) with Fwd/Lateral Offset (Fwd/Back, Left/Right)
@@ -1232,8 +1329,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 }
             }
         }
-
-
+        
         // Move selected units to the given Custom Army Formation positions
         private static void MoveSelectedToCustArmyFormPos(CustomArmyFormation customArmyFormation, MissionBehaviour missionBehaviourInstance, float extraLatOffset, float extraFwdOffset)
         {
@@ -1381,8 +1477,7 @@ namespace ArmyFormationsMadeEasy.Patches
             // TO-DO: The above hasn't updated All Default Formation.FrontAttachmentPoint
             AllFormationFrontAttPtUpdated = true;
         }
-
-
+        
         // Save all formation's curent position(relative to Infantry (I)) and other settings - to the given Custom Army Formation's 'Mod Options'
         private static void SaveAllToCustArmyForm(CustomArmyFormation customArmyFormation, MissionBehaviour missionBehaviourInstance)
         {
@@ -1511,7 +1606,335 @@ namespace ArmyFormationsMadeEasy.Patches
             }
         }
 
+        // WIP - EpicBattlesAI
+        private static void EpicBattleAITick(MissionBehaviour __instance)
+        {
+            // PHASE 1 - Move Enemy formations to position 125m in front of Player's team
+            if (!EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
+            {
+                EpicBattleAIPhase1Active = true;
+                MoveAllEnemyToFrontOfPlayerTeam(__instance, CustomArmyFormations[8], 0, Phase1DestinationOffsetDistance);
+            }
+            else if (EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
+            {
+                // Check if the Enemy Main Formation has reached Phase 1 destination
+                float xDelta = EnemyMainFormation.CurrentPosition.x - EpicBattleAIPhase1DestinationPos.X;
+                float yDelta = EnemyMainFormation.CurrentPosition.y - EpicBattleAIPhase1DestinationPos.Y;
+                if (xDelta > -10 && xDelta < 10 && yDelta > -10 && yDelta < 10)
+                {
+                    EpicBattleAIPhase1Completed = true;
+                    // Delay Phase 2
+                    EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow(EpicBattleAIDelayPhase2Seconds);
+                    //Debug Message
+                    InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
+                }
+            }
+            // PHASE 2 - Delay
+            else if (EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && EpicBattleAIPhase2DelayTime.IsPast)
+            {
+                EpicBattleAIPhase1Active = false;
+            }
+            // PHASE 2 - Advance enemy Ranged (II). Return HorseArcher (IV) units back to native AI
+            else if (!EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && !EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
+            {
+                EpicBattleAIPhase2Active = true;
+                FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
+                ReturnEnemyFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.HorseArcher));
+                //Debug Message
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged"));
+            }
+            else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
+            {
+                EpicBattleAIPhase2Completed = true;
+                // Delay Phase 3
+                EpicBattleAIPhase3DelayTime = MissionTime.SecondsFromNow(EpicBattleAIDelayPhase3Seconds);
+            }
+            // PHASE 3 - Delay
+            else if (EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && EpicBattleAIPhase3DelayTime.IsPast)
+            {
+                EpicBattleAIPhase2Active = false;
+            }
+            // PHASE 3 - Advance enemy Infantry (I). Return Cavalry enemy units back to native AI
+            else if (!EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && !EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
+            {
+                EpicBattleAIPhase3Active = true;
+                FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
+
+                Settings.Instance.AllAgentsWalk = true;
+
+                ReturnEnemyFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
+                
+                // Debug Message
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry"));
+            }
+            else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
+            {
+                EpicBattleAIPhase3Completed = true;
+                // Delay Phase 4
+                EpicBattleAIPhase4DelayTime = MissionTime.SecondsFromNow(EpicBattleAIDelayPhase4Seconds);
+            }
+            // PHASE 4 - Delay
+            else if (EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && EpicBattleAIPhase4DelayTime.IsPast)
+            {
+                EpicBattleAIPhase3Active = false;
+            }
+            // PHASE 4 - Charge enemy Infantry (I). 
+            else if (!EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && !EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
+            {
+                EpicBattleAIPhase4Active = true;
+                //FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
+                foreach (Formation formation in GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry))
+                {
+                    formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
+                    formation.IsAIControlled = true;
+                }
+                Settings.Instance.AllAgentsWalk = false;
+
+                // Debug Message
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry"));
+            }
+            else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
+            {
+                EpicBattleAIPhase4Completed = true;
+
+                // Deactivate EpicBattleAI
+                EpicBattleAIActive = false;
+            }
+        }
+
+        // Reset Epic Battle Bools
+        private static void EpicBattleAIReset()
+        {
+            EpicBattleAIPhase1Active = false;
+            EpicBattleAIPhase1Completed = false;
+            EpicBattleAIPhase2Active = false;
+            EpicBattleAIPhase2Completed = false;
+            EpicBattleAIPhase3Active = false;
+            EpicBattleAIPhase3Completed = false;
+            EpicBattleAIPhase4Active = false;
+            EpicBattleAIPhase4Completed = false;
+        }
+
+        // Return given Enemy Formations back to AI
+        private static void ReturnEnemyFormationsToAI(MissionBehaviour missionBehaviourInstance, IEnumerable<Formation> formations)
+        {
+            foreach (Formation formation in formations)
+            {
+                // Turn ON Formation AI
+                formation.IsAIControlled = true;
+            }
+        }
+
+        // Return All Enemy Formations back to AI
+        private static void ReturnAllEnemyFormationsToAI(MissionBehaviour missionBehaviourInstance)
+        {
+            List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
+                                where t.Side != missionBehaviourInstance.Mission.MainAgent.Team.Side
+                                select t).ToList();
+            if (teams != null && teams.Count > 0)
+            {
+                foreach (var team in teams)
+                {
+                    ReturnEnemyFormationsToAI(missionBehaviourInstance, team.Formations);
+                }
+            }
+        }
         
+        // Move Enemy Formations to Custom Army Formation positions offset from the Players Team
+        private static void MoveAllEnemyToFrontOfPlayerTeam(MissionBehaviour missionBehaviourInstance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset)
+        {
+            List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
+                                where t.Side != missionBehaviourInstance.Mission.MainAgent.Team.Side
+                                select t).ToList();
+            if (teams != null && teams.Count > 0)
+            {
+                // Get the MainAgent's main formation to act as target of the Enemy Army Formation
+                Formation PlayerMainFormation = null;
+                // Priorities all FormationIndexes in order, except Ranged & Cavalry.
+                foreach (Formation formation in missionBehaviourInstance.Mission.MainAgent.Team.Formations)
+                {
+                    if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
+                    {
+                        PlayerMainFormation = formation;
+                        break;
+                    }
+                }
+                // Priorities Ranged, then Cavalry last.
+                if (PlayerMainFormation == null)
+                {
+                    foreach (Formation formation in missionBehaviourInstance.Mission.MainAgent.Team.Formations)
+                    {
+                        PlayerMainFormation = formation;
+                        break;
+                    }
+                }
+
+                // Move enemy units to the given Custom Army Formation positions
+                if (PlayerMainFormation != null)
+                {
+                    foreach (var team in teams)
+                    {
+                        // Set the main formation to act as leader of Army Formation
+                        // Priorities all FormationIndexes in order, except Ranged & Cavalry.
+                        foreach (Formation formation in team.Formations)
+                        {
+                            if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
+                            {
+                                EnemyMainFormation = formation;
+                                break;
+                            }
+                        }
+                        // Priorities Ranged, then Cavalry last.
+                        if (EnemyMainFormation == null)
+                        {
+                            foreach (Formation formation in team.Formations)
+                            {
+                                EnemyMainFormation = formation;
+                                break;
+                            }
+                        }
+
+                        // Move All Enemy units to the given Custom Army Formation positions
+                        if (EnemyMainFormation != null)
+                        {
+                            foreach (Formation formation in team.Formations)
+                            {
+                                // Turn OFF Formation AI
+                                formation.IsAIControlled = false;
+
+                                // Face player's team
+                                formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
+
+                                // Move the EnemyMainFormation & move each formation in Enemy Army to a position relative to EnemyMainFormation's new position (default Infantry)
+                                if (formation == EnemyMainFormation)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.InfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.InfantryArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.InfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.InfantryFormOrder;
+
+                                    // Give move order to EnemyMainFormation to move 100 meters in front of PlayerMainFormation current position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, extraLatOffset, extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    EpicBattleAIPhase1DestinationPos = newWorldPos;
+                                }
+                                else if (formation.FormationIndex == FormationClass.Ranged)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.RangedArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.RangedArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.RangedFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.RangedFormOrder;
+
+                                    // Move Ranged Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset + extraLatOffset, customArmyFormation.RangedStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+                                else if (formation.FormationIndex == FormationClass.Cavalry)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.CavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.CavalryArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.CavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.CavalryFormOrder;
+
+                                    // Move Cavalry Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.CavalryStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+                                else if (formation.FormationIndex == FormationClass.HorseArcher)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.HorseArcherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HorseArcherArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.HorseArcherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HorseArcherFormOrder;
+
+                                    // Move HorseArcher Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset + extraLatOffset, customArmyFormation.HorseArcherStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+                                else if (formation.FormationIndex == FormationClass.Skirmisher)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.SkirmisherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.SkirmisherArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.SkirmisherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.SkirmisherFormOrder;
+
+                                    // Move Skirmisher Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset + extraLatOffset, customArmyFormation.SkirmisherStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+                                else if (formation.FormationIndex == FormationClass.HeavyInfantry)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.HeavyInfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyInfantryArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.HeavyInfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyInfantryFormOrder;
+
+                                    // Move HeavyInfantry Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset + extraLatOffset, customArmyFormation.HeavyInfantryStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+                                else if (formation.FormationIndex == FormationClass.LightCavalry)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.LightCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.LightCavalryArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.LightCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.LightCavalryFormOrder;
+
+                                    // Move LightCavalry Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.LightCavalryStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+                                else if (formation.FormationIndex == FormationClass.HeavyCavalry)
+                                {
+                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                    formation.ArrangementOrder = customArmyFormation.HeavyCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyCavalryArrangementOrder;
+
+                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                    formation.FormOrder = customArmyFormation.HeavyCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyCavalryFormOrder;
+
+                                    // Move HeavyCavalry Formation given paces right/forward of MainFormation's new position.
+                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.HeavyCavalryStartPosFwdOffset + extraFwdOffset);
+                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Get all enemy formations of given type
+        private static List<Formation> GetAllEnemyFormationsOfType(MissionBehaviour missionBehaviourInstance, FormationClass formationClass)
+        {
+            List<Formation> formations = new List<Formation>();
+
+            List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
+                                where t.Side != missionBehaviourInstance.Mission.MainAgent.Team.Side
+                                select t).ToList();
+            if (teams != null && teams.Count > 0)
+            {
+                foreach (var team in teams)
+                {
+                    foreach (Formation formation in team.Formations)
+                    {
+                        if (formation.FormationIndex == formationClass)
+                        {
+                            formations.Add(formation);
+                        }
+                    }
+                }
+            }
+
+            return formations; 
+        }
 
         // Get Lateral and Forward offsets of formation relative to MainFormation (I)
         private static Vec2 GetCurLatFwdPosRelToMainFormation(Formation mainFormation, Formation formation)

@@ -28,35 +28,59 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 if (agent.Formation?.FormationIndex == FormationClass.Infantry)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.InfantryMaxSpeedModifier, true);
+                    if (Settings.Instance.InfantryMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.InfantryMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.InfantryMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.InfantryMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.Ranged)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.RangedMaxSpeedModifier, true);
+                    if (Settings.Instance.RangedMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.RangedMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.RangedMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.RangedMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.Cavalry)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.CavalryMaxSpeedModifier, true);
+                    if (Settings.Instance.CavalryMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.CavalryMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.CavalryMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.CavalryMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.HorseArcher)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.HorseArcherMaxSpeedModifier, true);
+                    if (Settings.Instance.HorseArcherMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.HorseArcherMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.HorseArcherMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.HorseArcherMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.Skirmisher)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.SkirmisherMaxSpeedModifier, true);
+                    if (Settings.Instance.SkirmisherMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.SkirmisherMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.SkirmisherMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.SkirmisherMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.HeavyInfantry)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.HeavyInfantryMaxSpeedModifier, true);
+                    if (Settings.Instance.HeavyInfantryMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.HeavyInfantryMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.HeavyInfantryMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.HeavyInfantryMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.LightCavalry)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.LightCavalryMaxSpeedModifier, true);
+                    if (Settings.Instance.LightCavalryMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.LightCavalryMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.LightCavalryMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.LightCavalryMaxSpeedModifier, true);
                 }
                 else if (agent.Formation?.FormationIndex == FormationClass.HeavyCavalry)
                 {
-                    agent.SetMaximumSpeedLimit(Settings.Instance.HeavyCavalryMaxSpeedModifier, true);
+                    if (Settings.Instance.HeavyCavalryMaxSpeedModifier < 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.HeavyCavalryMaxSpeedModifier * 2, false);
+                    else if (Settings.Instance.HeavyCavalryMaxSpeedModifier >= 1)
+                        agent.SetMaximumSpeedLimit(Settings.Instance.HeavyCavalryMaxSpeedModifier, true);
                 }
             }
         }

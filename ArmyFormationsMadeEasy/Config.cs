@@ -50,6 +50,11 @@ namespace ArmyFormationsMadeEasy
         [XmlElement("CustomFormation8Key")]
         public int InstanceCustomFormation8Key { get; set; } = (int)InputKey.Numpad0;
         public static InputKey CustomFormation8Key => (InputKey)Instance.InstanceCustomFormation8Key;
+        [XmlElement("EpicBattlesAIToggleKey")]
+        public int InstanceEpicBattlesAIToggleKey { get; set; } = (int)InputKey.PageUp;
+        public static InputKey EpicBattlesAIToggleKey => (InputKey)Instance.InstanceEpicBattlesAIToggleKey;
+        
+
 
         private static readonly string ModBasePath =
             Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", ".."));
