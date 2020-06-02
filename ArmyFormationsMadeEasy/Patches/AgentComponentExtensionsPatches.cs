@@ -20,7 +20,7 @@ namespace ArmyFormationsMadeEasy.Patches
             if (agent == null || agent.State != AgentState.Active || agent.IsRetreating())
                 return;
 
-            if (Settings.Instance.AllAgentsWalk && agent.Team != agent.Mission.MainAgent?.Team)
+            if (Settings.Instance.AllEnemyAllyAgentsWalk && agent.Team != agent.Mission.MainAgent?.Team)
             {
                 agent.SetMaximumSpeedLimit(Settings.Instance.SpeedLimitReductionAmount, true);
             }

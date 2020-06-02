@@ -52,7 +52,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Allow 'Force Enemy/Ally To Walk'", "(Default: press Ctrl + minus(-) or Ctrl + equals(=)) Multiply Enemy/Ally units Max Speed by input amount. Default: 'Speed Multiplier'= 0.25f")]
         [SettingPropertyGroup("Allow 'Reduce Unit Speed Limit'   (Default: press minus(-))")]
-        public bool AllAgentsWalk { get; set; } = true;
+        public bool AllEnemyAllyAgentsWalk { get; set; } = true;
 
         public float InfantryMaxSpeedModifier { get; set; } = 1;
         public float RangedMaxSpeedModifier { get; set; } = 1;
@@ -66,7 +66,7 @@ namespace ArmyFormationsMadeEasy
         [XmlElement]
         [SettingProperty("Allow 'Epic Battles AI'", 0, 1, "(Default: press PageUp to toggle On/Off) Enemy will form up 100m in front of Player's Army and begin a 'Phased Battle Plan'")]
         [SettingPropertyGroup("Allow 'Epic Battles AI'   (Default: press PageUp)", true)]
-        public bool AllowEpicBattlesAI { get; set; } = true;
+        public bool AllowEpicBattleAI { get; set; } = true;
 
         [XmlElement]
         [SettingProperty("Enable Custom Army Formations", "First Enabled Formation uses F11 key. Second Enabled Formation uses F12 key. Automatically moves all units to their custom army formation positions relative to first available formation index - default is Infantry(I).")]

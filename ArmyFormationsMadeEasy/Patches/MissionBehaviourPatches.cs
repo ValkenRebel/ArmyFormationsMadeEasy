@@ -42,7 +42,7 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool CustomArmyFormationParamsSet { get; set; } = false;
         public static List<CustomArmyFormation> CustomArmyFormations { get; set; } = new List<CustomArmyFormation>();
 
-        private static Helpers helpersInstance = new Helpers();
+        private static Helpers _helpersInstance = new Helpers();
 
 
         #region Epic Battle AI
@@ -56,7 +56,7 @@ namespace ArmyFormationsMadeEasy.Patches
         public static MissionTime EpicBattleAIPhase2DelayTime;
         public static bool EpicBattleAIPhase2Active { get; set; } = false;
         public static bool EpicBattleAIPhase2Completed { get; set; } = false;
-        public static float Phase2DestinationOffsetDistance { get; set; } = 30f;
+        public static float Phase2DestinationOffsetDistance { get; set; } = 40f;
         public static float EpicBattleAIDelayPhase3Seconds { get; set; } = 30f;
         public static MissionTime EpicBattleAIPhase3DelayTime;
         public static bool EpicBattleAIPhase3Active { get; set; } = false;
@@ -66,6 +66,14 @@ namespace ArmyFormationsMadeEasy.Patches
         public static MissionTime EpicBattleAIPhase4DelayTime;
         public static bool EpicBattleAIPhase4Active { get; set; } = false;
         public static bool EpicBattleAIPhase4Completed { get; set; } = false;
+        public static float EpicBattleAIDelayPhase5Seconds { get; set; } = 30f;
+        public static MissionTime EpicBattleAIPhase5DelayTime;
+        public static bool EpicBattleAIPhase5Active { get; set; } = false;
+        public static bool EpicBattleAIPhase5Completed { get; set; } = false;
+        public static bool EpicBattleAIFlee { get; set; } = false;
+        public static bool EpicBattleAIIsRetreating { get; set; } = false;
+        public static bool EpicBattleAIIsFightingOn { get; set; } = false;
+
         #endregion
 
 
@@ -85,14 +93,27 @@ namespace ArmyFormationsMadeEasy.Patches
                 InitCustomArmyFormationsList();
             }
 
+            // Reset Enemy/Ally max speed limit at start of each battle
+            if (__instance.Mission.TimeSpeedTimerElapsedTime <= 0.1 && Settings.Instance.AllEnemyAllyAgentsWalk)
+            {
+                Settings.Instance.AllEnemyAllyAgentsWalk = false;
+            }
+
             // Update if Alt, Ctrl, or Shift are currently held down (Left & Right)
             UpdateAltKeyStates();
 
             // Handle user inputs
             ManageKeyInputs(__instance);
 
+
             // Epic Battle AI Tick
-            if (Settings.Instance.AllowEpicBattlesAI && EpicBattleAIActive)
+            if (__instance.Mission.TimeSpeedTimerElapsedTime <= 0.1 && EpicBattleAIActive)
+            {
+                // Deactivate and Reset Epic Battle AI at start of each battle
+                EpicBattleAIActive = false;
+                EpicBattleAIReset();
+            }
+            else if (Settings.Instance.AllowEpicBattleAI && EpicBattleAIActive)
             {
                 EpicBattleAITick(__instance);
             }
@@ -100,6 +121,7 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 EpicBattleAIReset();
             }
+
         }
 
 
@@ -784,7 +806,7 @@ namespace ArmyFormationsMadeEasy.Patches
         private static void ManageKeyInputs(MissionBehaviour __instance)
         {
             // 'Default: PageUp' - Toggle Epic Battle AI (Custom Enemy AI) active/deactive.
-            if (Settings.Instance.AllowEpicBattlesAI && Input.IsKeyPressed(Config.EpicBattlesAIToggleKey) && !EpicBattlesAIToggleKeyPressed)
+            if (Settings.Instance.AllowEpicBattleAI && Input.IsKeyPressed(Config.EpicBattlesAIToggleKey) && !EpicBattlesAIToggleKeyPressed)
             {
                 if (!AnyAlternateKeysHeldDown && __instance.Mission.MainAgent != null)
                 {
@@ -805,7 +827,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Prevent repeat - until 'EpicBattlesAIToggleKey' has been released
                 EpicBattlesAIToggleKeyPressed = true;
             }
-            else if (Settings.Instance.AllowEpicBattlesAI && Input.IsKeyReleased(Config.EpicBattlesAIToggleKey) && EpicBattlesAIToggleKeyPressed)
+            else if (Settings.Instance.AllowEpicBattleAI && Input.IsKeyReleased(Config.EpicBattlesAIToggleKey) && EpicBattlesAIToggleKeyPressed)
             {
                 // Allow 'EpicBattlesAIToggleKey' press to be registered once again
                 EpicBattlesAIToggleKeyPressed = false;
@@ -823,7 +845,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 }
                 else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
-                    Settings.Instance.AllAgentsWalk = false;
+                    Settings.Instance.AllEnemyAllyAgentsWalk = false;
 
                     // Display message
                     InformationManager.DisplayMessage(new InformationMessage("All enemy units can now charge.'"));
@@ -849,7 +871,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 }
                 else if ((LCtrlKeyPressed || RCtrlKeyPressed) && __instance.Mission.MainAgent != null && __instance.Mission.MainAgent.Health > 0)
                 {
-                    Settings.Instance.AllAgentsWalk = true;
+                    Settings.Instance.AllEnemyAllyAgentsWalk = true;
 
                     // Display message
                     InformationManager.DisplayMessage(new InformationMessage("All enemy units must walk, unless routed.'"));
@@ -1494,21 +1516,21 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.InfantryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.InfantryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.InfantryArrangementOrderNum);
+                            customArmyFormation.InfantryArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.InfantryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.InfantryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.InfantryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.InfantryFormOrderNum);
+                            customArmyFormation.InfantryFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.InfantryFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.InfantryFormOrderNum);
                         }
                         else if (formation.FormationIndex == FormationClass.Ranged)
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.RangedArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.RangedArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.RangedArrangementOrderNum);
+                            customArmyFormation.RangedArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.RangedArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.RangedFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.RangedFormOrder = helpersInstance.GetFormOrder(customArmyFormation.RangedFormOrderNum);
+                            customArmyFormation.RangedFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.RangedFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.RangedFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.RangedStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1518,11 +1540,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.CavalryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.CavalryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.CavalryArrangementOrderNum);
+                            customArmyFormation.CavalryArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.CavalryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.CavalryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.CavalryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.CavalryFormOrderNum);
+                            customArmyFormation.CavalryFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.CavalryFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.CavalryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.CavalryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1532,11 +1554,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.HorseArcherArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.HorseArcherArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.HorseArcherArrangementOrderNum);
+                            customArmyFormation.HorseArcherArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.HorseArcherArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.HorseArcherFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.HorseArcherFormOrder = helpersInstance.GetFormOrder(customArmyFormation.HorseArcherFormOrderNum);
+                            customArmyFormation.HorseArcherFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.HorseArcherFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.HorseArcherFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.HorseArcherStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1546,11 +1568,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.SkirmisherArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.SkirmisherArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.SkirmisherArrangementOrderNum);
+                            customArmyFormation.SkirmisherArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.SkirmisherArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.SkirmisherFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.SkirmisherFormOrder = helpersInstance.GetFormOrder(customArmyFormation.SkirmisherFormOrderNum);
+                            customArmyFormation.SkirmisherFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.SkirmisherFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.SkirmisherFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.SkirmisherStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1560,11 +1582,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.HeavyInfantryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.HeavyInfantryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.HeavyInfantryArrangementOrderNum);
+                            customArmyFormation.HeavyInfantryArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.HeavyInfantryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.HeavyInfantryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.HeavyInfantryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.HeavyInfantryFormOrderNum);
+                            customArmyFormation.HeavyInfantryFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.HeavyInfantryFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.HeavyInfantryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.HeavyInfantryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1574,11 +1596,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.LightCavalryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.LightCavalryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.LightCavalryArrangementOrderNum);
+                            customArmyFormation.LightCavalryArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.LightCavalryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.LightCavalryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.LightCavalryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.LightCavalryFormOrderNum);
+                            customArmyFormation.LightCavalryFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.LightCavalryFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.LightCavalryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.LightCavalryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1588,11 +1610,11 @@ namespace ArmyFormationsMadeEasy.Patches
                         {
                             // Update ArrangementOrder - 'ShieldWall', 'Loose', etc.
                             customArmyFormation.HeavyCavalryArrangementOrderNum = (int)formation.ArrangementOrder.OrderEnum;
-                            customArmyFormation.HeavyCavalryArrangementOrder = helpersInstance.GetArrangementOrder(customArmyFormation.HeavyCavalryArrangementOrderNum);
+                            customArmyFormation.HeavyCavalryArrangementOrder = _helpersInstance.GetArrangementOrder(customArmyFormation.HeavyCavalryArrangementOrderNum);
 
                             // Update FormOrder (preset/custom front width)
-                            customArmyFormation.HeavyCavalryFormOrderNum = helpersInstance.GetCurFormOrderNum(formation);
-                            customArmyFormation.HeavyCavalryFormOrder = helpersInstance.GetFormOrder(customArmyFormation.HeavyCavalryFormOrderNum);
+                            customArmyFormation.HeavyCavalryFormOrderNum = _helpersInstance.GetCurFormOrderNum(formation);
+                            customArmyFormation.HeavyCavalryFormOrder = _helpersInstance.GetFormOrder(customArmyFormation.HeavyCavalryFormOrderNum);
 
                             // Update Lateral/Forward position relative to MainFormation's position.
                             customArmyFormation.HeavyCavalryStartPosLateralOffset = GetCurLatFwdPosRelToMainFormation(MainFormation, formation).X;
@@ -1624,7 +1646,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 {
                     EpicBattleAIPhase1Completed = true;
                     // Delay Phase 2
-                    EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow(EpicBattleAIDelayPhase2Seconds);
+                    EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase2Seconds, EpicBattleAIDelayPhase2Seconds + 15));
                     //Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
                 }
@@ -1641,13 +1663,13 @@ namespace ArmyFormationsMadeEasy.Patches
                 FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
                 ReturnEnemyFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.HorseArcher));
                 //Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged"));
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
             }
             else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
             {
                 EpicBattleAIPhase2Completed = true;
                 // Delay Phase 3
-                EpicBattleAIPhase3DelayTime = MissionTime.SecondsFromNow(EpicBattleAIDelayPhase3Seconds);
+                EpicBattleAIPhase3DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase3Seconds, EpicBattleAIDelayPhase3Seconds + 60));
             }
             // PHASE 3 - Delay
             else if (EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && EpicBattleAIPhase3DelayTime.IsPast)
@@ -1660,18 +1682,18 @@ namespace ArmyFormationsMadeEasy.Patches
                 EpicBattleAIPhase3Active = true;
                 FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
 
-                Settings.Instance.AllAgentsWalk = true;
+                Settings.Instance.AllEnemyAllyAgentsWalk = true;
 
                 ReturnEnemyFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
                 
                 // Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry"));
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
             }
             else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
             {
                 EpicBattleAIPhase3Completed = true;
                 // Delay Phase 4
-                EpicBattleAIPhase4DelayTime = MissionTime.SecondsFromNow(EpicBattleAIDelayPhase4Seconds);
+                EpicBattleAIPhase4DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase4Seconds, EpicBattleAIDelayPhase4Seconds + 30));
             }
             // PHASE 4 - Delay
             else if (EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && EpicBattleAIPhase4DelayTime.IsPast)
@@ -1682,23 +1704,74 @@ namespace ArmyFormationsMadeEasy.Patches
             else if (!EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && !EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
             {
                 EpicBattleAIPhase4Active = true;
-                //FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
+                
                 foreach (Formation formation in GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry))
                 {
                     formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
                     formation.IsAIControlled = true;
                 }
-                Settings.Instance.AllAgentsWalk = false;
+                Settings.Instance.AllEnemyAllyAgentsWalk = false;
 
                 // Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry"));
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 4 - Infantry/Cavalry Charge!"));
             }
             else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
             {
                 EpicBattleAIPhase4Completed = true;
 
-                // Deactivate EpicBattleAI
-                EpicBattleAIActive = false;
+                // Delay Phase 5
+                EpicBattleAIPhase5DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase5Seconds, EpicBattleAIDelayPhase5Seconds + 10));
+            }
+            // PHASE 5 - Delay
+            else if (EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && EpicBattleAIPhase5DelayTime.IsPast)
+            {
+                EpicBattleAIPhase4Active = false;
+            }
+            // PHASE 5 - Assess casualties and flee if casualties are too heavy (Random chance 50/50). 
+            else if (!EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && !EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
+            {
+                EpicBattleAIPhase5Active = true;
+
+                // Decide if they should flee after sustaining heavy casualties
+                EpicBattleAIFlee = _helpersInstance.GetRandomInt(0, 4) == 0 ? false : true;
+
+                // Debug Message
+                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Assessing Casualties"));
+            }
+            else if (EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
+            {
+                if (EnemyMainFormation.QuerySystem.CasualtyRatio < 0.40)
+                {
+                    if (EpicBattleAIFlee && EnemyMainFormation.Team.QuerySystem.OverallPowerRatio < __instance.Mission.MainAgent.Team.QuerySystem.OverallPowerRatio)
+                    {
+                        // Display Message
+                        if (!EpicBattleAIIsRetreating)
+                        {
+                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Retreat!"));
+
+                            foreach (Agent agent in EnemyMainFormation.Team.TeamAgents)
+                            {
+                                agent.Retreat();
+                            }
+
+                            EpicBattleAIIsRetreating = true;
+                        }
+                    }
+                    else
+                    {
+                        // Display Message
+                        if (!EpicBattleAIIsFightingOn)
+                        {
+                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Hold the line!"));
+                            EpicBattleAIIsFightingOn = true;
+                        }
+                    }
+
+                    //EpicBattleAIPhase5Completed = true;
+
+                    // Deactivate EpicBattleAI
+                    // EpicBattleAIActive = false;
+                }
             }
         }
 
@@ -1713,6 +1786,8 @@ namespace ArmyFormationsMadeEasy.Patches
             EpicBattleAIPhase3Completed = false;
             EpicBattleAIPhase4Active = false;
             EpicBattleAIPhase4Completed = false;
+            EpicBattleAIPhase5Active = false;
+            EpicBattleAIPhase5Completed = false;
         }
 
         // Return given Enemy Formations back to AI
@@ -2117,6 +2192,18 @@ namespace ArmyFormationsMadeEasy.Patches
 
     public class Helpers
     {
+        private static Random _random = new Random();
+        public double GetRandomDouble(double minimum, double maximum)
+        {
+            return _random.NextDouble() * (maximum - minimum) + minimum;
+        }
+
+        public int GetRandomInt(int minimum, int maximum)
+        {
+            int randomInt = _random.Next(minimum, maximum);
+            return randomInt;
+        }
+
         public ArrangementOrder GetArrangementOrder(int index)
         {
             switch (index)
