@@ -69,9 +69,13 @@ namespace ArmyFormationsMadeEasy
         public bool AllowEpicBattleAI { get; set; } = true;
 
         [XmlElement]
-        [SettingProperty("Enable Custom Army Formations", "First Enabled Formation uses F11 key. Second Enabled Formation uses F12 key. Automatically moves all units to their custom army formation positions relative to first available formation index - default is Infantry(I).")]
+        [SettingProperty("Enable Custom Army Formations", "Toggle Mod ON/OFF")]
         /*[SettingPropertyGroup("Allow Custom Army Formations - press F11 or F12", true)]*/
         public bool CustomArmyFormationsModEnabled { get; set; } = true;
+
+        [XmlElement]
+        [SettingProperty("Enable Helpful Tips", "Toggle helpful in-battle tips ON/OFF")]
+        public bool TipsEnabled { get; set; } = true;
 
 
 

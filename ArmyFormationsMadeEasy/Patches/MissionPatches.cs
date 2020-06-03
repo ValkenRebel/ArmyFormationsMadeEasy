@@ -42,7 +42,13 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool CustomArmyFormationParamsSet { get; set; } = false;
         public static List<CustomArmyFormation> CustomArmyFormations { get; set; } = new List<CustomArmyFormation>();
 
+        public static BattleSideEnum PlayerBattleSideEnum { get; set; } = BattleSideEnum.Attacker;
+
         private static Helpers _helpersInstance = new Helpers();
+
+        public static float TimeBetweenTips { get; set; } = 30f;
+        public static MissionTime TipsDelayTime;
+        public static bool[] DisplayedTips = new bool[37];
 
 
         #region Epic Battle AI
@@ -94,7 +100,11 @@ namespace ArmyFormationsMadeEasy.Patches
         static void Postfix(Mission __instance)
         {
             if (__instance == null || __instance.CurrentState == Mission.State.EndingNextFrame || __instance.CurrentState == Mission.State.Over)
+            {
+                EpicBattleAIActive = false;
+                EpicBattleAIBoolReset();
                 return;
+            }
 
             // Fill the Custom Army Formations List - from the current Mod 'Settings' Options
             if (CustomArmyFormations.Count == 0 && __instance.MainAgent != null)
@@ -108,21 +118,148 @@ namespace ArmyFormationsMadeEasy.Patches
                 Settings.Instance.AllEnemyAllyAgentsWalk = false;
             }
 
+            // Get the player's side at the beginning of battle
+            if (__instance.TimeSpeedTimerElapsedTime > 0 && __instance.TimeSpeedTimerElapsedTime <= 0.2 && __instance.MainAgent != null)
+            {
+                PlayerBattleSideEnum = __instance.MainAgent.Team.Side;
+            }
+
             // Update if Alt, Ctrl, or Shift are currently held down (Left & Right)
-            UpdateAltKeyStates();
+                UpdateAltKeyStates();
 
             // Handle user inputs
             ManageKeyInputs(__instance);
 
-            // Display Epic Battle AI Message
-            if (__instance.TimeSpeedTimerElapsedTime >= 10 && __instance.TimeSpeedTimerElapsedTime <= 10.2 && !EpicBattleMessageDisplayed && !EpicBattleAIActive)
+            // Init helpful tips delay timer
+            if (Settings.Instance.TipsEnabled && TipsDelayTime == null)
             {
-                InformationManager.DisplayMessage(new InformationMessage("TIP: Press 'PageUp' to enable Epic Battle AI for Enemy/Allies!"));
-                EpicBattleMessageDisplayed = true;
+                TipsDelayTime = MissionTime.SecondsFromNow(TimeBetweenTips);
+            }
+
+            // Display helpful tips
+            if (Settings.Instance.TipsEnabled && TipsDelayTime.IsPast)
+            {
+                string tipStr = string.Empty;
+
+                int randomIndex = _helpersInstance.GetRandomInt(0, DisplayedTips.Count());
+
+                while (DisplayedTips[randomIndex])
+                {
+                    randomIndex = 0;
+                    while (randomIndex < DisplayedTips.Count())
+                    {
+                        if (!DisplayedTips[randomIndex])
+                            break;
+
+                        randomIndex++;
+                    }
+
+                    if (randomIndex == DisplayedTips.Count())
+                    {
+                        randomIndex = 0;
+                        DisplayedTips = ResetDisplayedTips(DisplayedTips);
+                    }
+                }
+
+                // Mark tip as having been displayed
+                DisplayedTips[randomIndex] = true;
+
+                switch (randomIndex)
+                {
+                    case 0:
+                        tipStr = "Tip: Press 'F11' to move selected units to 'Custom Army Formation 1'";
+                        break;
+                    case 1:
+                        tipStr = "Tip: Press 'F12' to move selected units to 'Custom Army Formation 2'";
+                        break;
+                    case 2:
+                        tipStr = "Tip: Press 'NunPad5' to move selected units to 'Custom Army Formation 3'";
+                        break;
+                    case 3:
+                        tipStr = "Tip: Press 'NunPad6' to move selected units to 'Custom Army Formation 4'";
+                        break;
+                    case 4:
+                        tipStr = "Tip: Press 'NunPad7' to move selected units to 'Custom Army Formation 5'";
+                        break;
+                    case 5:
+                        tipStr = "Tip: Press 'NunPad8' to move selected units to 'Custom Army Formation 6'";
+                        break;
+                    case 6:
+                        tipStr = "Tip: Press 'NunPad9' to move selected units to 'Custom Army Formation 7'";
+                        break;
+                    case 7:
+                        tipStr = "Tip: Press 'NunPad0' to move selected units to 'Custom Army Formation 8'";
+                        break;
+                    case 8:
+                        tipStr = "Tip: Press 'F9' to move selected units forward X paces. (X value can be changed in 'Mod Options')";
+                        break;
+                    case 9:
+                        tipStr = "Tip: Press 'F10' to move selected units backwards X paces. (X value can be changed in 'Mod Options')";
+                        break;
+                    case 10:
+                        tipStr = "Tip: Press '[CustomFormationKey] + F9' to move selected units forward X paces, while maintaining army formation.";
+                        break;
+                    case 11:
+                    case 12:
+                        tipStr = "Tip: Press 'F2' then 'Click Direction' to make selected units hold that direction facing.";
+                        break;
+                    case 13:
+                    case 14:
+                        tipStr = "Tip: Press 'F2' then 'F2' to make selected units always face nearby enemy.";
+                        break;
+                    case 15:
+                        tipStr = "Tip: Press 'F2' then 'Click Direction' then 'F9' to make selected units advance, while maintaining direction facing/spacing.";
+                        break;
+                    case 16:
+                        tipStr = "Tip: Start battle using a 'Custom Army Formation' that has Ranged(II) units at the front.";
+                        break;
+                    case 17:
+                        tipStr = "Tip: When enemy advance switch to a 'Custom Army Formation' that has Ranged(II) units at the rear.";
+                        break;
+                    case 18:
+                        tipStr = "Tip: Infantry (I) act as the center of the formation. If no Infantry, it reverts in order (IV, V, VI, VII, VIII, II, III)";
+                        break;
+                    case 19:
+                        tipStr = "Tip: Press 'Minus(-)' to force selected units to 'Slow March'.";
+                        break;
+                    case 20:
+                        tipStr = "Tip: Press 'Equals(=)' to reset selected units to 'Quick March' speeds.";
+                        break;
+                    case 21:
+                        tipStr = "Tip: Press 'Ctrl + Minus(-)' to force enemy and allied units to 'Slow March'.";
+                        break;
+                    case 22:
+                        tipStr = "Tip: Press 'Ctrl + Equals(=)' to reset enemy and allied units to 'Quick March' speeds.";
+                        break;
+                    case 23:
+                    case 24:
+                    case 25:
+                        tipStr = "Tip: Press 'PageUp' to toggle Epic Battle AI on/off. Enemy and Allied units form up opposite each other and then use a sensible Phased Battle Plan, like in Hollywood Epics.";
+                        break;
+                    case 26:
+                    case 27:
+                        tipStr = "Tip: Chain multiple formation setups together - customising them for each situation/phase of a battle.";
+                        break;
+                    case 28:
+                    case 29:
+                        tipStr = "Tip: Saving formations in battle are temporary (until game restarts). To make permanent go to 'Mod Options' menu. Click 'Done' - so that game prompts you to restart.";
+                        break;
+                    case 30:
+                        tipStr = "Tip: Remember to show your support and 'ENDORSE' the mods that you enjoy - so that others may find them too.";
+                        break;
+                    default: 
+                        tipStr = "Tip: Press 'Ctrl + [CustomFormationKey]' to save army's current positions. Go to 'Mod Options' after battle to make changes permanent.";
+                        break;
+                }
+
+                InformationManager.DisplayMessage(new InformationMessage(tipStr));
+
+                // Reset delay timer
+                TipsDelayTime = MissionTime.SecondsFromNow(TimeBetweenTips);
             }
             
             // Epic Battle AI Tick
-            if (__instance.TimeSpeedTimerElapsedTime <= 0.1 && EpicBattleAIActive)
+            if (__instance.TimeSpeedTimerElapsedTime == 0 && EpicBattleAIActive)
             {
                 // Deactivate and Reset Epic Battle AI at start of each battle if still active
                 EpicBattleAIActive = false;
@@ -145,6 +282,13 @@ namespace ArmyFormationsMadeEasy.Patches
             else if (Settings.Instance.AllowEpicBattleAI && !EpicBattleAIActive)
             {
                 EpicBattleAIBoolReset();
+            }
+
+            // Display Epic Battle AI Message
+            if (__instance.TimeSpeedTimerElapsedTime >= 10 && __instance.TimeSpeedTimerElapsedTime <= 10.2 && !EpicBattleMessageDisplayed && !EpicBattleAIActive)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("TIP: Press 'PageUp' - to enable 'Epic Battle AI' for Enemy/Allies."));
+                EpicBattleMessageDisplayed = true;
             }
 
         }
@@ -433,6 +577,7 @@ namespace ArmyFormationsMadeEasy.Patches
                                                                                 );
             CustomArmyFormations.Add(customArmyFormation07);
 
+            // Used by Enemy and Ally Teams
             CustomArmyFormation customArmyFormation08 = new CustomArmyFormation(8,
                                                                                 true,   //Settings.Instance.CustomArmyFormation07Enabled,
                                                                                 5,      //Settings.Instance.CustomArmyFormation07InfantryArrangementOrder,
@@ -442,11 +587,11 @@ namespace ArmyFormationsMadeEasy.Patches
                                                                                 0,      //Settings.Instance.CustomArmyFormation07RangedStartPosLateralOffset,
                                                                                 20,    //Settings.Instance.CustomArmyFormation07RangedStartPosFwdOffset,
                                                                                 -1,     //Settings.Instance.CustomArmyFormation07CavalryArrangementOrder,
-                                                                                -2,      //Settings.Instance.CustomArmyFormation07CavalryFormOrder,
+                                                                                -1,      //Settings.Instance.CustomArmyFormation07CavalryFormOrder,
                                                                                 -60,     //Settings.Instance.CustomArmyFormation07CavalryStartPosLateralOffset,
                                                                                 0,      //Settings.Instance.CustomArmyFormation07CavalryStartPosFwdOffset,
                                                                                 -1,     //Settings.Instance.CustomArmyFormation07HorseArcherArrangementOrder,
-                                                                                -2,      //Settings.Instance.CustomArmyFormation07HorseArcherFormOrder,
+                                                                                -1,      //Settings.Instance.CustomArmyFormation07HorseArcherFormOrder,
                                                                                 60,    //Settings.Instance.CustomArmyFormation07HorseArcherStartPosLateralOffset,
                                                                                 0,      //Settings.Instance.CustomArmyFormation07HorseArcherStartPosFwdOffset,
                                                                                 5,      //Settings.Instance.CustomArmyFormation07SkirmisherArrangementOrder,
@@ -847,6 +992,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     {
                         ReturnAllAllyFormationsToAI(__instance);
                         ReturnAllEnemyFormationsToAI(__instance);
+                        Settings.Instance.AllEnemyAllyAgentsWalk = false;
                         InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Disabled"));
                     }
                 }
@@ -1681,6 +1827,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase2Seconds, EpicBattleAIDelayPhase2Seconds + 15));
                     //Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
+                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
             }
             // PHASE 2 - Delay
@@ -1702,6 +1849,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
                 //Debug Message
                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
+                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
             }
             else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
             {
@@ -1731,6 +1879,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
                 // Debug Message
                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
+                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
             }
             else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
             {
@@ -1763,6 +1912,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
                 // Debug Message
                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 4 - Infantry/Cavalry Charge!"));
+                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
             }
             else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
             {
@@ -1791,15 +1941,30 @@ namespace ArmyFormationsMadeEasy.Patches
             }
             else if (EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
             {
-                if (EnemyMainFormation.QuerySystem.CasualtyRatio < 0.35)
+                if (EnemyMainFormation?.QuerySystem.CasualtyRatio < 0.35)
                 {
+                    // Current enemy side's OveralPowerRatio
+                    float enemyOverallPowerRatio = 0;
+                    foreach (Team team in GetAllEnemyTeams(__instance, PlayerBattleSideEnum))
+                    {
+                        enemyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
+                    }
+
+                    // Current friendly side's OveralPowerRatio
+                    float friendlyOverallPowerRatio = 0;
+                    foreach (Team team in GetAllFriendlyTeams(__instance, PlayerBattleSideEnum))
+                    {
+                        friendlyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
+                    }
+
                     // Enemy Teams
-                    if (EpicBattleAIFlee && EnemyMainFormation.Team.QuerySystem.OverallPowerRatio < __instance.MainAgent.Team.QuerySystem.OverallPowerRatio)
+                    if (EpicBattleAIFlee && enemyOverallPowerRatio < friendlyOverallPowerRatio)
                     {
                         // Display Message
                         if (!EpicBattleAIIsRetreating)
                         {
                             InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Retreating!"));
+                            MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
 
                             foreach (Agent agent in EnemyMainFormation.Team.TeamAgents)
                             {
@@ -1814,7 +1979,8 @@ namespace ArmyFormationsMadeEasy.Patches
                         // Display Message
                         if (!EpicBattleAIIsFightingOn)
                         {
-                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Holding the line!"));
+                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Fighting On!"));
+                            MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
                             EpicBattleAIIsFightingOn = true;
                             ReturnAllEnemyFormationsToAI(__instance);
                         }
@@ -1832,6 +1998,7 @@ namespace ArmyFormationsMadeEasy.Patches
                             formation.MovementOrder = MovementOrder.MovementOrderCharge;
                         }
                         InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - All Ally units Move at will!"));
+                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), AllyMainFormation.Team.GeneralAgent.Position);
                         EpicBattleAIAllyMoveAtWill = true;
                     }
                         
@@ -1842,6 +2009,17 @@ namespace ArmyFormationsMadeEasy.Patches
                     // EpicBattleAIActive = false;
                 }
             }
+        }
+
+        // Reset Epic Battle Bools
+        private static bool[] ResetDisplayedTips(bool[] displayedTipsArray)
+        {
+            for(int i = 0; i < displayedTipsArray.Count(); i++)
+            {
+                displayedTipsArray[i] = false;
+            }
+
+            return displayedTipsArray;
         }
 
         // Reset Epic Battle Bools
@@ -1860,6 +2038,24 @@ namespace ArmyFormationsMadeEasy.Patches
             EpicBattleAIIsRetreating = false;
             EpicBattleAIIsFightingOn = false;
             EpicBattleAIAllyMoveAtWill = false;
+        }
+
+        // Get All Enemy Teams
+        private static List<Team> GetAllEnemyTeams(Mission __instance, BattleSideEnum playerBattleSideEnum)
+        {
+            List<Team> teams = (from t in __instance.Teams
+                                where t.Side != playerBattleSideEnum
+                                select t).ToList();
+            return teams;
+        }
+
+        // Get All Friendly Teams including Player's team (MainAgent)
+        private static List<Team> GetAllFriendlyTeams(Mission __instance, BattleSideEnum playerBattleSideEnum)
+        {
+            List<Team> teams = (from t in __instance.Teams
+                                where t.Side == playerBattleSideEnum
+                                select t).ToList();
+            return teams;
         }
 
         // Return given Formations back to AI
