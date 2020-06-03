@@ -49,9 +49,12 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool EpicBattleAIActive { get; set; } = false;
         public static bool EpicBattleAIPhase1Active { get; set; } = false;
         public static bool EpicBattleAIPhase1Completed { get; set; } = false;
+        public static Formation PlayerMainFormation { get; set; } = null;
         public static Formation EnemyMainFormation { get; set; } = null;
+        public static Formation AllyMainFormation { get; set; } = null;
         public static WorldPosition EpicBattleAIPhase1DestinationPos { get; set; } = new WorldPosition();
-        public static float Phase1DestinationOffsetDistance { get; set; } = 175f;
+        public static float Phase1DestinationOffsetDistance { get; set; } = 225f;
+        public static float Phase1AllyDestinationOffsetDistance { get; set; } = 75f;
         public static float EpicBattleAIDelayPhase2Seconds { get; set; } = 30f;
         public static MissionTime EpicBattleAIPhase2DelayTime;
         public static bool EpicBattleAIPhase2Active { get; set; } = false;
@@ -73,6 +76,9 @@ namespace ArmyFormationsMadeEasy.Patches
         public static bool EpicBattleAIFlee { get; set; } = false;
         public static bool EpicBattleAIIsRetreating { get; set; } = false;
         public static bool EpicBattleAIIsFightingOn { get; set; } = false;
+        public static bool EpicBattleAIAllyMoveAtWill { get; set; } = false;
+        public static bool EpicBattleMessageDisplayed { get; set; } = false;
+        
 
         #endregion
 
@@ -105,21 +111,37 @@ namespace ArmyFormationsMadeEasy.Patches
             // Handle user inputs
             ManageKeyInputs(__instance);
 
-
+            // Display Epic Battle AI Message
+            if (__instance.Mission.TimeSpeedTimerElapsedTime >= 10 && __instance.Mission.TimeSpeedTimerElapsedTime <= 10.2 && !EpicBattleMessageDisplayed && !EpicBattleAIActive)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("TIP: Press 'PageUp' to enable Epic Battle AI for Enemy/Allies!"));
+                EpicBattleMessageDisplayed = true;
+            }
+            
             // Epic Battle AI Tick
             if (__instance.Mission.TimeSpeedTimerElapsedTime <= 0.1 && EpicBattleAIActive)
             {
-                // Deactivate and Reset Epic Battle AI at start of each battle
+                // Deactivate and Reset Epic Battle AI at start of each battle if still active
                 EpicBattleAIActive = false;
-                EpicBattleAIReset();
+                EpicBattleAIBoolReset();
+                EpicBattleMessageDisplayed = false;
+            }
+            else if (__instance.Mission.TimeSpeedTimerElapsedTime >= 0.1 && (__instance.Mission.AttackerTeam.QuerySystem.TeamPower <= 0 || __instance.Mission.DefenderTeam.QuerySystem.TeamPower <= 0))
+            {
+                // Deactivate and Reset Epic Battle AI at end of each battle
+                EpicBattleAIActive = false;
+                ReturnAllAllyFormationsToAI(__instance);
+                ReturnAllEnemyFormationsToAI(__instance);
+                EpicBattleAIBoolReset();
+                EpicBattleMessageDisplayed = false;
             }
             else if (Settings.Instance.AllowEpicBattleAI && EpicBattleAIActive)
             {
                 EpicBattleAITick(__instance);
             }
-            else
+            else if (Settings.Instance.AllowEpicBattleAI && !EpicBattleAIActive)
             {
-                EpicBattleAIReset();
+                EpicBattleAIBoolReset();
             }
 
         }
@@ -417,11 +439,11 @@ namespace ArmyFormationsMadeEasy.Patches
                                                                                 0,      //Settings.Instance.CustomArmyFormation07RangedStartPosLateralOffset,
                                                                                 20,    //Settings.Instance.CustomArmyFormation07RangedStartPosFwdOffset,
                                                                                 -1,     //Settings.Instance.CustomArmyFormation07CavalryArrangementOrder,
-                                                                                0,      //Settings.Instance.CustomArmyFormation07CavalryFormOrder,
+                                                                                -2,      //Settings.Instance.CustomArmyFormation07CavalryFormOrder,
                                                                                 -60,     //Settings.Instance.CustomArmyFormation07CavalryStartPosLateralOffset,
                                                                                 0,      //Settings.Instance.CustomArmyFormation07CavalryStartPosFwdOffset,
                                                                                 -1,     //Settings.Instance.CustomArmyFormation07HorseArcherArrangementOrder,
-                                                                                0,      //Settings.Instance.CustomArmyFormation07HorseArcherFormOrder,
+                                                                                -2,      //Settings.Instance.CustomArmyFormation07HorseArcherFormOrder,
                                                                                 60,    //Settings.Instance.CustomArmyFormation07HorseArcherStartPosLateralOffset,
                                                                                 0,      //Settings.Instance.CustomArmyFormation07HorseArcherStartPosFwdOffset,
                                                                                 5,      //Settings.Instance.CustomArmyFormation07SkirmisherArrangementOrder,
@@ -820,6 +842,8 @@ namespace ArmyFormationsMadeEasy.Patches
                     }
                     else
                     {
+                        ReturnAllAllyFormationsToAI(__instance);
+                        ReturnAllEnemyFormationsToAI(__instance);
                         InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Disabled"));
                     }
                 }
@@ -1631,18 +1655,23 @@ namespace ArmyFormationsMadeEasy.Patches
         // WIP - EpicBattlesAI
         private static void EpicBattleAITick(MissionBehaviour __instance)
         {
-            // PHASE 1 - Move Enemy formations to position 125m in front of Player's team
+            // PHASE 1
+            // - Move Enemy formations to position in front of Player's team
+            // - Move Ally formations to position to the right of Player's team
             if (!EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
             {
                 EpicBattleAIPhase1Active = true;
-                MoveAllEnemyToFrontOfPlayerTeam(__instance, CustomArmyFormations[8], 0, Phase1DestinationOffsetDistance);
+                // Enemy Teams
+                MoveAllEnemyToPlayerTeamOffset(__instance, CustomArmyFormations[8], 0, Phase1DestinationOffsetDistance);
+                // Ally Teams
+                MoveAllAllyToPlayerTeamOffset(__instance, CustomArmyFormations[8], Phase1AllyDestinationOffsetDistance, 50);
             }
             else if (EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
             {
                 // Check if the Enemy Main Formation has reached Phase 1 destination
                 float xDelta = EnemyMainFormation.CurrentPosition.x - EpicBattleAIPhase1DestinationPos.X;
                 float yDelta = EnemyMainFormation.CurrentPosition.y - EpicBattleAIPhase1DestinationPos.Y;
-                if (xDelta > -10 && xDelta < 10 && yDelta > -10 && yDelta < 10)
+                if (xDelta > -20 && xDelta < 20 && yDelta > -20 && yDelta < 20)
                 {
                     EpicBattleAIPhase1Completed = true;
                     // Delay Phase 2
@@ -1656,12 +1685,18 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 EpicBattleAIPhase1Active = false;
             }
-            // PHASE 2 - Advance enemy Ranged (II). Return HorseArcher (IV) units back to native AI
+            // PHASE 2
+            // - Advance enemy/ally Ranged (II). Return HorseArcher (IV) units back to native AI
             else if (!EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && !EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
             {
                 EpicBattleAIPhase2Active = true;
+                // Ally Teams First for reference (in-case player isn't general)
+                FormationsAdvanceYPaces(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
+                ReturnFormationsToAI(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.HorseArcher));
+                // Enemy Teams
                 FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
-                ReturnEnemyFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.HorseArcher));
+                ReturnFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.HorseArcher));
+
                 //Debug Message
                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
             }
@@ -1676,16 +1711,21 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 EpicBattleAIPhase2Active = false;
             }
-            // PHASE 3 - Advance enemy Infantry (I). Return Cavalry enemy units back to native AI
+            // PHASE 3
+            // - Advance enemy Infantry (I). Return Enemy/Ally Cavalry units back to native AI
             else if (!EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && !EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
             {
                 EpicBattleAIPhase3Active = true;
+                // Enemy Teams
+                Phase3DestinationOffsetDistance = (float)GetDistanceBetweenFormations(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry)[0], AllyMainFormation) * 0.75f;
                 FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
+                ReturnFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
+
+                // Ally Teams
+                ReturnFormationsToAI(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Cavalry));
 
                 Settings.Instance.AllEnemyAllyAgentsWalk = true;
 
-                ReturnEnemyFormationsToAI(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
-                
                 // Debug Message
                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
             }
@@ -1701,15 +1741,21 @@ namespace ArmyFormationsMadeEasy.Patches
                 EpicBattleAIPhase3Active = false;
             }
             // PHASE 4 - Charge enemy Infantry (I). 
+            // - Return Ally Ranged (II) to AI
             else if (!EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && !EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
             {
                 EpicBattleAIPhase4Active = true;
                 
+                // Enemy Team
                 foreach (Formation formation in GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry))
                 {
                     formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
-                    formation.IsAIControlled = true;
+                    formation.AI.EnsureBehavior<BehaviorCharge>();
+                    //formation.IsAIControlled = true;
+                    formation.MovementOrder = MovementOrder.MovementOrderCharge;
                 }
+
+                ReturnFormationsToAI(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Ranged));
                 Settings.Instance.AllEnemyAllyAgentsWalk = false;
 
                 // Debug Message
@@ -1727,7 +1773,9 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 EpicBattleAIPhase4Active = false;
             }
-            // PHASE 5 - Assess casualties and flee if casualties are too heavy (Random chance 50/50). 
+            // PHASE 5 
+            // - Assess enemy casualties and whether to flee if casualties are too heavy (Random chance 2:1). 
+            // - Ally Infantry Charge
             else if (!EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && !EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
             {
                 EpicBattleAIPhase5Active = true;
@@ -1740,14 +1788,15 @@ namespace ArmyFormationsMadeEasy.Patches
             }
             else if (EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
             {
-                if (EnemyMainFormation.QuerySystem.CasualtyRatio < 0.40)
+                if (EnemyMainFormation.QuerySystem.CasualtyRatio < 0.35)
                 {
+                    // Enemy Teams
                     if (EpicBattleAIFlee && EnemyMainFormation.Team.QuerySystem.OverallPowerRatio < __instance.Mission.MainAgent.Team.QuerySystem.OverallPowerRatio)
                     {
                         // Display Message
                         if (!EpicBattleAIIsRetreating)
                         {
-                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Retreat!"));
+                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Retreating!"));
 
                             foreach (Agent agent in EnemyMainFormation.Team.TeamAgents)
                             {
@@ -1762,10 +1811,27 @@ namespace ArmyFormationsMadeEasy.Patches
                         // Display Message
                         if (!EpicBattleAIIsFightingOn)
                         {
-                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Hold the line!"));
+                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Holding the line!"));
                             EpicBattleAIIsFightingOn = true;
+                            ReturnAllEnemyFormationsToAI(__instance);
                         }
                     }
+
+                    //Ally Teams
+                    if (!EpicBattleAIAllyMoveAtWill)
+                    {
+                        ReturnAllAllyFormationsToAI(__instance);
+                        foreach (Formation formation in GetAllAllyFormationsOfType(__instance, FormationClass.Infantry))
+                        {
+                            formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
+                            formation.AI.EnsureBehavior<BehaviorCharge>();
+                            formation.IsAIControlled = false;
+                            formation.MovementOrder = MovementOrder.MovementOrderCharge;
+                        }
+                        InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - All Ally units Move at will!"));
+                        EpicBattleAIAllyMoveAtWill = true;
+                    }
+                        
 
                     //EpicBattleAIPhase5Completed = true;
 
@@ -1776,7 +1842,7 @@ namespace ArmyFormationsMadeEasy.Patches
         }
 
         // Reset Epic Battle Bools
-        private static void EpicBattleAIReset()
+        private static void EpicBattleAIBoolReset()
         {
             EpicBattleAIPhase1Active = false;
             EpicBattleAIPhase1Completed = false;
@@ -1788,10 +1854,13 @@ namespace ArmyFormationsMadeEasy.Patches
             EpicBattleAIPhase4Completed = false;
             EpicBattleAIPhase5Active = false;
             EpicBattleAIPhase5Completed = false;
+            EpicBattleAIIsRetreating = false;
+            EpicBattleAIIsFightingOn = false;
+            EpicBattleAIAllyMoveAtWill = false;
         }
 
-        // Return given Enemy Formations back to AI
-        private static void ReturnEnemyFormationsToAI(MissionBehaviour missionBehaviourInstance, IEnumerable<Formation> formations)
+        // Return given Formations back to AI
+        private static void ReturnFormationsToAI(MissionBehaviour missionBehaviourInstance, IEnumerable<Formation> formations)
         {
             foreach (Formation formation in formations)
             {
@@ -1804,27 +1873,42 @@ namespace ArmyFormationsMadeEasy.Patches
         private static void ReturnAllEnemyFormationsToAI(MissionBehaviour missionBehaviourInstance)
         {
             List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
-                                where t.Side != missionBehaviourInstance.Mission.MainAgent.Team.Side
+                                where t.Side != missionBehaviourInstance.Mission.MainAgent?.Team.Side
                                 select t).ToList();
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
                 {
-                    ReturnEnemyFormationsToAI(missionBehaviourInstance, team.Formations);
+                    ReturnFormationsToAI(missionBehaviourInstance, team.FormationsIncludingSpecial);
                 }
             }
         }
-        
-        // Move Enemy Formations to Custom Army Formation positions offset from the Players Team
-        private static void MoveAllEnemyToFrontOfPlayerTeam(MissionBehaviour missionBehaviourInstance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset)
+
+        // Return All Ally Formations back to AI
+        private static void ReturnAllAllyFormationsToAI(MissionBehaviour missionBehaviourInstance)
         {
             List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
-                                where t.Side != missionBehaviourInstance.Mission.MainAgent.Team.Side
+                                where t.Side == missionBehaviourInstance.Mission.MainAgent?.Team.Side && t != missionBehaviourInstance.Mission.MainAgent?.Team
                                 select t).ToList();
+
+            if (teams.Count == 0 && missionBehaviourInstance.Mission.MainAgent != null && !missionBehaviourInstance.Mission.MainAgent.Team.IsPlayerGeneral)
+            {
+                teams.Add(missionBehaviourInstance.Mission.MainAgent.Team);
+            }
+
+            foreach (var team in teams)
+            {
+                ReturnFormationsToAI(missionBehaviourInstance, team.FormationsIncludingSpecial);
+            }
+        }
+
+        // Move given Team's Formations to Custom Army Formation positions offset from the Players Team
+        private static void MoveTeamsToPlayerTeamOffset(MissionBehaviour missionBehaviourInstance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset, List<Team> teams)
+        {
             if (teams != null && teams.Count > 0)
             {
-                // Get the MainAgent's main formation to act as target of the Enemy Army Formation
-                Formation PlayerMainFormation = null;
+                // Get the MainAgent's main formation to act as target of the Army Formation
+                PlayerMainFormation = null;
                 // Priorities all FormationIndexes in order, except Ranged & Cavalry.
                 foreach (Formation formation in missionBehaviourInstance.Mission.MainAgent.Team.Formations)
                 {
@@ -1844,146 +1928,339 @@ namespace ArmyFormationsMadeEasy.Patches
                     }
                 }
 
-                // Move enemy units to the given Custom Army Formation positions
+                // Move teams units to the given Custom Army Formation positions
                 if (PlayerMainFormation != null)
                 {
                     foreach (var team in teams)
                     {
-                        // Set the main formation to act as leader of Army Formation
-                        // Priorities all FormationIndexes in order, except Ranged & Cavalry.
-                        foreach (Formation formation in team.Formations)
+                        // Ally Teams
+                        if (team.Side == missionBehaviourInstance.Mission.MainAgent.Team.Side)
                         {
-                            if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
+                            // Set the main formation to act as leader of Ally Army Formation
+                            // Priorities all FormationIndexes in order, except Ranged & Cavalry.
+                            foreach (Formation formation in team.FormationsIncludingSpecial)
                             {
-                                EnemyMainFormation = formation;
-                                break;
+                                if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
+                                {
+                                    AllyMainFormation = formation;
+                                    break;
+                                }
+                            }
+                            // Priorities Ranged, then Cavalry last.
+                            if (AllyMainFormation == null)
+                            {
+                                foreach (Formation formation in team.FormationsIncludingSpecial)
+                                {
+                                    AllyMainFormation = formation;
+                                    break;
+                                }
+                            }
+
+                            // Move All Ally units to the given Custom Army Formation positions
+                            if (AllyMainFormation != null)
+                            {
+                                foreach (Formation formation in team.FormationsIncludingSpecial)
+                                {
+                                    // Turn OFF Formation AI
+                                    formation.IsAIControlled = false;
+
+                                    // Face opposite side
+                                    formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
+
+                                    // Move the AllyMainFormation & move each formation in Ally Army to a position relative to AllyMainFormation's new position (default Infantry)
+                                    if (formation == AllyMainFormation)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.InfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.InfantryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.InfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.InfantryFormOrder;
+
+                                        // Give move order to AllyMainFormation to move 75 meters right 50m front of PlayerMainFormation current position.
+                                        WorldPosition newWorldPos;
+                                        if (AllyMainFormation == PlayerMainFormation)
+                                            newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, 0, extraFwdOffset);
+                                        else
+                                            newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, extraLatOffset, extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.Ranged)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.RangedArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.RangedArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.RangedFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.RangedFormOrder;
+
+                                        // Move Ranged Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset + extraLatOffset, -customArmyFormation.RangedStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.Cavalry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.CavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.CavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.CavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.CavalryFormOrder;
+
+                                        // Move Cavalry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset + extraLatOffset, -customArmyFormation.CavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.HorseArcher)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HorseArcherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HorseArcherArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HorseArcherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HorseArcherFormOrder;
+
+                                        // Move HorseArcher Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset + extraLatOffset, -customArmyFormation.HorseArcherStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.Skirmisher)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.SkirmisherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.SkirmisherArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.SkirmisherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.SkirmisherFormOrder;
+
+                                        // Move Skirmisher Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset + extraLatOffset, -customArmyFormation.SkirmisherStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.HeavyInfantry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HeavyInfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyInfantryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HeavyInfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyInfantryFormOrder;
+
+                                        // Move HeavyInfantry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset + extraLatOffset, -customArmyFormation.HeavyInfantryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.LightCavalry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.LightCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.LightCavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.LightCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.LightCavalryFormOrder;
+
+                                        // Move LightCavalry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset + extraLatOffset, -customArmyFormation.LightCavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.HeavyCavalry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HeavyCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyCavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HeavyCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyCavalryFormOrder;
+
+                                        // Move HeavyCavalry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset + extraLatOffset, -customArmyFormation.HeavyCavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HeavyCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyCavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HeavyCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyCavalryFormOrder;
+
+                                        // Move Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset + extraLatOffset, -customArmyFormation.HeavyCavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+
+                                }
                             }
                         }
-                        // Priorities Ranged, then Cavalry last.
-                        if (EnemyMainFormation == null)
+                        // Enemy Teams
+                        else
                         {
-                            foreach (Formation formation in team.Formations)
+                            // Set the main formation to act as leader of Enemy Army Formation
+                            // Priorities all FormationIndexes in order, except Ranged & Cavalry.
+                            foreach (Formation formation in team.FormationsIncludingSpecial)
                             {
-                                EnemyMainFormation = formation;
-                                break;
+                                if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
+                                {
+                                    EnemyMainFormation = formation;
+                                    break;
+                                }
                             }
-                        }
-
-                        // Move All Enemy units to the given Custom Army Formation positions
-                        if (EnemyMainFormation != null)
-                        {
-                            foreach (Formation formation in team.Formations)
+                            // Priorities Ranged, then Cavalry last.
+                            if (EnemyMainFormation == null)
                             {
-                                // Turn OFF Formation AI
-                                formation.IsAIControlled = false;
-
-                                // Face player's team
-                                formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
-
-                                // Move the EnemyMainFormation & move each formation in Enemy Army to a position relative to EnemyMainFormation's new position (default Infantry)
-                                if (formation == EnemyMainFormation)
+                                foreach (Formation formation in team.FormationsIncludingSpecial)
                                 {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.InfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.InfantryArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.InfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.InfantryFormOrder;
-
-                                    // Give move order to EnemyMainFormation to move 100 meters in front of PlayerMainFormation current position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, extraLatOffset, extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                    EpicBattleAIPhase1DestinationPos = newWorldPos;
+                                    EnemyMainFormation = formation;
+                                    break;
                                 }
-                                else if (formation.FormationIndex == FormationClass.Ranged)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.RangedArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.RangedArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.RangedFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.RangedFormOrder;
-
-                                    // Move Ranged Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset + extraLatOffset, customArmyFormation.RangedStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-                                else if (formation.FormationIndex == FormationClass.Cavalry)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.CavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.CavalryArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.CavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.CavalryFormOrder;
-
-                                    // Move Cavalry Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.CavalryStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-                                else if (formation.FormationIndex == FormationClass.HorseArcher)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.HorseArcherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HorseArcherArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.HorseArcherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HorseArcherFormOrder;
-
-                                    // Move HorseArcher Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset + extraLatOffset, customArmyFormation.HorseArcherStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-                                else if (formation.FormationIndex == FormationClass.Skirmisher)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.SkirmisherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.SkirmisherArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.SkirmisherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.SkirmisherFormOrder;
-
-                                    // Move Skirmisher Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset + extraLatOffset, customArmyFormation.SkirmisherStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-                                else if (formation.FormationIndex == FormationClass.HeavyInfantry)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.HeavyInfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyInfantryArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.HeavyInfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyInfantryFormOrder;
-
-                                    // Move HeavyInfantry Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset + extraLatOffset, customArmyFormation.HeavyInfantryStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-                                else if (formation.FormationIndex == FormationClass.LightCavalry)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.LightCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.LightCavalryArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.LightCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.LightCavalryFormOrder;
-
-                                    // Move LightCavalry Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.LightCavalryStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-                                else if (formation.FormationIndex == FormationClass.HeavyCavalry)
-                                {
-                                    // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
-                                    formation.ArrangementOrder = customArmyFormation.HeavyCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyCavalryArrangementOrder;
-
-                                    // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
-                                    formation.FormOrder = customArmyFormation.HeavyCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyCavalryFormOrder;
-
-                                    // Move HeavyCavalry Formation given paces right/forward of MainFormation's new position.
-                                    WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.HeavyCavalryStartPosFwdOffset + extraFwdOffset);
-                                    formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
-                                }
-
                             }
-                        }
+
+                            // Move All Enemy units to the given Custom Army Formation positions
+                            if (EnemyMainFormation != null)
+                            {
+                                foreach (Formation formation in team.FormationsIncludingSpecial)
+                                {
+                                    // Turn OFF Formation AI
+                                    formation.IsAIControlled = false;
+
+                                    // Face player's team
+                                    formation.FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
+
+                                    // Move the EnemyMainFormation & move each formation in Enemy Army to a position relative to EnemyMainFormation's new position (default Infantry)
+                                    if (formation == EnemyMainFormation)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.InfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.InfantryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.InfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.InfantryFormOrder;
+
+                                        // Give move order to EnemyMainFormation to move 225 meters in front of PlayerMainFormation current position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, extraLatOffset, extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                        EpicBattleAIPhase1DestinationPos = newWorldPos;
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.Ranged)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.RangedArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.RangedArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.RangedFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.RangedFormOrder;
+
+                                        // Move Ranged Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.RangedStartPosLateralOffset + extraLatOffset, customArmyFormation.RangedStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.Cavalry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.CavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.CavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.CavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.CavalryFormOrder;
+
+                                        // Move Cavalry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.CavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.CavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.HorseArcher)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HorseArcherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HorseArcherArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HorseArcherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HorseArcherFormOrder;
+
+                                        // Move HorseArcher Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HorseArcherStartPosLateralOffset + extraLatOffset, customArmyFormation.HorseArcherStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.Skirmisher)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.SkirmisherArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.SkirmisherArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.SkirmisherFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.SkirmisherFormOrder;
+
+                                        // Move Skirmisher Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.SkirmisherStartPosLateralOffset + extraLatOffset, customArmyFormation.SkirmisherStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.HeavyInfantry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HeavyInfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyInfantryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HeavyInfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyInfantryFormOrder;
+
+                                        // Move HeavyInfantry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyInfantryStartPosLateralOffset + extraLatOffset, customArmyFormation.HeavyInfantryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.LightCavalry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.LightCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.LightCavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.LightCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.LightCavalryFormOrder;
+
+                                        // Move LightCavalry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.LightCavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.LightCavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else if (formation.FormationIndex == FormationClass.HeavyCavalry)
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.HeavyCavalryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.HeavyCavalryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.HeavyCavalryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.HeavyCavalryFormOrder;
+
+                                        // Move HeavyCavalry Formation given paces right/forward of MainFormation's new position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, customArmyFormation.HeavyCavalryStartPosLateralOffset + extraLatOffset, customArmyFormation.HeavyCavalryStartPosFwdOffset + extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                    }
+                                    else
+                                    {
+                                        // Set the formation's ArrangementOrder if enabled in settings (-1 = disabled) - 'ShieldWall', 'Loose', etc.
+                                        formation.ArrangementOrder = customArmyFormation.InfantryArrangementOrderNum == -1 ? formation.ArrangementOrder : customArmyFormation.InfantryArrangementOrder;
+
+                                        // Set the formation's FormOrder (preset/custom front width) if enabled in settings (0 = disabled)
+                                        formation.FormOrder = customArmyFormation.InfantryFormOrderNum == 0 ? formation.FormOrder : customArmyFormation.InfantryFormOrder;
+
+                                        // Give move order to any remaining Formations to move 225 meters in front of PlayerMainFormation current position.
+                                        WorldPosition newWorldPos = CalcWorldPosRelToFormation(PlayerMainFormation, missionBehaviourInstance, extraLatOffset, extraFwdOffset);
+                                        formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
+                                        EpicBattleAIPhase1DestinationPos = newWorldPos;
+                                    }
+
+                                }
+                            }
+                        }  
                     }
                 }
             }
+        }
+        
+        // Move Enemy Formations to Custom Army Formation positions offset from the Players Team
+        private static void MoveAllEnemyToPlayerTeamOffset(MissionBehaviour missionBehaviourInstance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset)
+        {
+            List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
+                                where t.Side != missionBehaviourInstance.Mission.MainAgent?.Team.Side
+                                select t).ToList();
+
+            MoveTeamsToPlayerTeamOffset(missionBehaviourInstance, customArmyFormation, extraLatOffset, extraFwdOffset, teams);
+        }
+
+        // Move Ally Formations to Custom Army Formation positions offset from the Players Team
+        private static void MoveAllAllyToPlayerTeamOffset(MissionBehaviour missionBehaviourInstance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset)
+        {
+            List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
+                                where t.Side == missionBehaviourInstance.Mission.MainAgent?.Team.Side && t != missionBehaviourInstance.Mission.MainAgent?.Team
+                                select t).ToList();
+
+            if (teams.Count == 0 && missionBehaviourInstance.Mission.MainAgent != null && !missionBehaviourInstance.Mission.MainAgent.Team.IsPlayerGeneral)
+            {
+                teams.Add(missionBehaviourInstance.Mission.MainAgent.Team);
+            }
+
+            MoveTeamsToPlayerTeamOffset(missionBehaviourInstance, customArmyFormation, extraLatOffset, extraFwdOffset, teams);
         }
 
         // Get all enemy formations of given type
@@ -1998,7 +2275,7 @@ namespace ArmyFormationsMadeEasy.Patches
             {
                 foreach (var team in teams)
                 {
-                    foreach (Formation formation in team.Formations)
+                    foreach (Formation formation in team.FormationsIncludingSpecial)
                     {
                         if (formation.FormationIndex == formationClass)
                         {
@@ -2009,6 +2286,31 @@ namespace ArmyFormationsMadeEasy.Patches
             }
 
             return formations; 
+        }
+
+        // Get all ally formations of given type
+        private static List<Formation> GetAllAllyFormationsOfType(MissionBehaviour missionBehaviourInstance, FormationClass formationClass)
+        {
+            List<Formation> formations = new List<Formation>();
+
+            List<Team> teams = (from t in missionBehaviourInstance.Mission.Teams
+                                where t.Side == missionBehaviourInstance.Mission.MainAgent.Team.Side && t != missionBehaviourInstance.Mission.MainAgent.Team
+                                select t).ToList();
+            if (teams != null && teams.Count > 0)
+            {
+                foreach (var team in teams)
+                {
+                    foreach (Formation formation in team.FormationsIncludingSpecial)
+                    {
+                        if (formation.FormationIndex == formationClass)
+                        {
+                            formations.Add(formation);
+                        }
+                    }
+                }
+            }
+
+            return formations;
         }
 
         // Get Lateral and Forward offsets of formation relative to MainFormation (I)
@@ -2031,7 +2333,14 @@ namespace ArmyFormationsMadeEasy.Patches
             return new Vec2((float)xRot, (float)yRot);
         }
 
-
+        // Get distance between two formations
+        private static double GetDistanceBetweenFormations(MissionBehaviour __instance, Formation formation1, Formation formation2)
+        {
+            float deltaPosX = formation1.CurrentPosition.X - formation2.CurrentPosition.X;
+            float deltaPosY = formation1.CurrentPosition.Y - formation2.CurrentPosition.Y;
+            return Math.Sqrt(deltaPosX * deltaPosX + deltaPosY * deltaPosY);
+        }
+        
 
         // (deprecated) Move all units to the given Custom Army Formation positions
         private static void MoveAllToCustArmyFormPos(CustomArmyFormation customArmyFormation, MissionBehaviour missionBehaviourInstance)
