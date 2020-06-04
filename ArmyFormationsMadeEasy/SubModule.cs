@@ -1,12 +1,11 @@
-﻿using HarmonyLib;
+﻿using ArmyFormationsMadeEasy.CampaignBehaviors;
+using HarmonyLib;
 using ModLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 
 namespace ArmyFormationsMadeEasy
@@ -17,6 +16,9 @@ namespace ArmyFormationsMadeEasy
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
+            // Is this wrong? Check M&B Libraries to see if it should be completely overriden
+            base.OnBeforeInitialModuleScreenSetAsRoot();
+
             try
             {
                 FileDatabase.Initialise(ModuleFolderName);
@@ -32,9 +34,27 @@ namespace ArmyFormationsMadeEasy
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
-            base.OnGameStart(game, gameStarterObject);
+            try
+            {
+                base.OnGameStart(game, gameStarterObject);
+                if (!(game.GameType is Campaign))
+                    return;
+                this.AddBehaviors(gameStarterObject as CampaignGameStarter);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error Adding Behaviours - Army Formations Made Easy:\n\n{ex.ToStringFull()}");
+            }
 
             // AddModels(gameStarterObject as CampaignGameStarter);
+        }
+
+        private void AddBehaviors(CampaignGameStarter gameStarterObject)
+        {
+            if (gameStarterObject == null)
+                return;
+            gameStarterObject.AddBehavior(SavedFormationClassesBehavior.Instance);
+            gameStarterObject.LoadGameTexts(BasePath.Name + "Modules/ArmyFormationsMadeEasy/ModuleData/module_strings.xml");
         }
 
         private void AddModels(CampaignGameStarter gameStarter)

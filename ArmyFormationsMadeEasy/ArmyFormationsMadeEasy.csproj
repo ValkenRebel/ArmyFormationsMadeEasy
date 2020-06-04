@@ -222,9 +222,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CampaignBehaviors\SavedFormationClassesBehavior.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Patches\AgentComponentExtensionsPatches.cs" />
+    <Compile Include="Patches\BasicCharacterObjectPatches.cs" />
+    <Compile Include="Patches\LoadContextPatches.cs" />
     <Compile Include="Patches\MissionPatches.cs" />
+    <Compile Include="Patches\CampaignPatches.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubModule.cs" />
@@ -237,6 +241,9 @@
     <Content Include="D:\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ArmyFormationsMadeEasy\ModuleData\ArmyFormationsMadeEasyConfig.xml">
       <Link>SubModuleFiles\ModuleData\ArmyFormationsMadeEasyConfig.xml</Link>
       <SubType>Designer</SubType>
+    </Content>
+    <Content Include="D:\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ArmyFormationsMadeEasy\ModuleData\module_strings.xml">
+      <Link>SubModuleFiles\ModuleData\module_strings.xml</Link>
     </Content>
     <Content Include="D:\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ArmyFormationsMadeEasy\SubModule.xml">
       <Link>SubModuleFiles\SubModule.xml</Link>
