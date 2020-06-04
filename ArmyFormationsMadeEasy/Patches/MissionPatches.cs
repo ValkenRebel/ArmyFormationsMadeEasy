@@ -205,7 +205,7 @@ namespace ArmyFormationsMadeEasy.Patches
                         break;
                     case 13:
                     case 14:
-                        tipStr = "Tip: Press 'F2' then 'F2' to make selected units always face nearby enemy.";
+                        tipStr = "Tip: Press 'F2' then 'F2' to make selected units turn to face the nearest threat.";
                         break;
                     case 15:
                         tipStr = "Tip: Press 'F2' then 'Click Direction' then 'F9' to make selected units advance, while maintaining direction facing/spacing.";
@@ -234,7 +234,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     case 23:
                     case 24:
                     case 25:
-                        tipStr = "Tip: Press 'PageUp' to toggle Epic Battle AI on/off. Enemy and Allied units form up opposite each other and then use a sensible Phased Battle Plan, like in Hollywood Epics.";
+                        tipStr = "Tip: Press 'PageUp' to toggle Epic Battle AI on/off. Enemy and Allied units form up opposite each other and then use a 'Phased Battle Plan'.";
                         break;
                     case 26:
                     case 27:
@@ -246,6 +246,9 @@ namespace ArmyFormationsMadeEasy.Patches
                         break;
                     case 30:
                         tipStr = "Tip: Remember to show your support and 'ENDORSE' the mods that you enjoy - so that others may find them too.";
+                        break;
+                    case 31:
+                        tipStr = "Tip: You can modify key-bindings by editing: /ModuleData/ArmyFormationsMadeEasyConfig.xml";
                         break;
                     default: 
                         tipStr = "Tip: Press 'Ctrl + [CustomFormationKey]' to save army's current positions. Go to 'Mod Options' after battle to make changes permanent.";
@@ -1804,210 +1807,256 @@ namespace ArmyFormationsMadeEasy.Patches
         // WIP - EpicBattlesAI
         private static void EpicBattleAITick(Mission __instance)
         {
-            // PHASE 1
-            // - Move Enemy formations to position in front of Player's team
-            // - Move Ally formations to position to the right of Player's team
-            if (!EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
-            {
-                EpicBattleAIPhase1Active = true;
-                // Enemy Teams
-                MoveAllEnemyToPlayerTeamOffset(__instance, CustomArmyFormations[8], 0, Phase1DestinationOffsetDistance);
-                // Ally Teams
-                MoveAllAllyToPlayerTeamOffset(__instance, CustomArmyFormations[8], Phase1AllyDestinationOffsetDistance, 50);
-            }
-            else if (EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
-            {
-                // Check if the Enemy Main Formation has reached Phase 1 destination
-                float xDelta = EnemyMainFormation.CurrentPosition.x - EpicBattleAIPhase1DestinationPos.X;
-                float yDelta = EnemyMainFormation.CurrentPosition.y - EpicBattleAIPhase1DestinationPos.Y;
-                if (xDelta > -20 && xDelta < 20 && yDelta > -20 && yDelta < 20)
+            try
+            { 
+                // PHASE 1
+                // - Move Enemy formations to position in front of Player's team
+                // - Move Ally formations to position to the right of Player's team
+                if (!EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
                 {
-                    EpicBattleAIPhase1Completed = true;
-                    // Delay Phase 2
-                    EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase2Seconds, EpicBattleAIDelayPhase2Seconds + 15));
-                    //Debug Message
-                    InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
-                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
-                }
-            }
-            // PHASE 2 - Delay
-            else if (EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && EpicBattleAIPhase2DelayTime.IsPast)
-            {
-                EpicBattleAIPhase1Active = false;
-            }
-            // PHASE 2
-            // - Advance enemy/ally Ranged (II). Return HorseArcher (IV) units back to native AI
-            else if (!EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && !EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
-            {
-                EpicBattleAIPhase2Active = true;
-                // Ally Teams First for reference (in-case player isn't general)
-                FormationsAdvanceYPaces(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
-                ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.HorseArcher));
-                // Enemy Teams
-                FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
-                ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.HorseArcher));
-
-                //Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
-                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
-            }
-            else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
-            {
-                EpicBattleAIPhase2Completed = true;
-                // Delay Phase 3
-                EpicBattleAIPhase3DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase3Seconds, EpicBattleAIDelayPhase3Seconds + 60));
-            }
-            // PHASE 3 - Delay
-            else if (EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && EpicBattleAIPhase3DelayTime.IsPast)
-            {
-                EpicBattleAIPhase2Active = false;
-            }
-            // PHASE 3
-            // - Advance enemy Infantry (I). Return Enemy/Ally Cavalry units back to native AI
-            else if (!EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && !EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
-            {
-                EpicBattleAIPhase3Active = true;
-                // Enemy Teams
-                Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry)[0], AllyMainFormation) * 0.75f;
-                FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
-                ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
-
-                // Ally Teams
-                ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.Cavalry));
-
-                Settings.Instance.AllEnemyAllyAgentsWalk = true;
-
-                // Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
-                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
-            }
-            else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
-            {
-                EpicBattleAIPhase3Completed = true;
-                // Delay Phase 4
-                EpicBattleAIPhase4DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase4Seconds, EpicBattleAIDelayPhase4Seconds + 20));
-            }
-            // PHASE 4 - Delay
-            else if (EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && EpicBattleAIPhase4DelayTime.IsPast)
-            {
-                EpicBattleAIPhase3Active = false;
-            }
-            // PHASE 4 - Charge enemy Infantry (I). 
-            // - Return Ally Ranged (II) to AI
-            else if (!EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && !EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
-            {
-                EpicBattleAIPhase4Active = true;
-                
-                // Enemy Team
-                foreach (Formation formation in GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry))
-                {
-                    formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
-                    formation.AI.EnsureBehavior<BehaviorCharge>();
-                    //formation.IsAIControlled = true;
-                    formation.MovementOrder = MovementOrder.MovementOrderCharge;
-                }
-
-                ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.Ranged));
-                Settings.Instance.AllEnemyAllyAgentsWalk = false;
-
-                // Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 4 - Infantry/Cavalry Charge!"));
-                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
-            }
-            else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
-            {
-                EpicBattleAIPhase4Completed = true;
-
-                // Delay Phase 5
-                EpicBattleAIPhase5DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase5Seconds, EpicBattleAIDelayPhase5Seconds + 10));
-            }
-            // PHASE 5 - Delay
-            else if (EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && EpicBattleAIPhase5DelayTime.IsPast)
-            {
-                EpicBattleAIPhase4Active = false;
-            }
-            // PHASE 5 
-            // - Assess enemy casualties and whether to flee if casualties are too heavy (Random chance 2:1). 
-            // - Ally Infantry Charge
-            else if (!EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && !EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
-            {
-                EpicBattleAIPhase5Active = true;
-
-                // Decide if they should flee after sustaining heavy casualties
-                EpicBattleAIFlee = _helpersInstance.GetRandomInt(0, 4) == 0 ? false : true;
-
-                // Debug Message
-                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Assessing Casualties"));
-            }
-            else if (EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
-            {
-                if (EnemyMainFormation?.QuerySystem.CasualtyRatio < 0.35)
-                {
-                    // Current enemy side's OveralPowerRatio
-                    float enemyOverallPowerRatio = 0;
-                    foreach (Team team in GetAllEnemyTeams(__instance, PlayerBattleSideEnum))
-                    {
-                        enemyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
-                    }
-
-                    // Current friendly side's OveralPowerRatio
-                    float friendlyOverallPowerRatio = 0;
-                    foreach (Team team in GetAllFriendlyTeams(__instance, PlayerBattleSideEnum))
-                    {
-                        friendlyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
-                    }
-
+                    EpicBattleAIPhase1Active = true;
                     // Enemy Teams
-                    if (EpicBattleAIFlee && enemyOverallPowerRatio < friendlyOverallPowerRatio)
+                    MoveAllEnemyToPlayerTeamOffset(__instance, CustomArmyFormations[8], 0, Phase1DestinationOffsetDistance);
+                    // Ally Teams
+                    MoveAllAllyToPlayerTeamOffset(__instance, CustomArmyFormations[8], Phase1AllyDestinationOffsetDistance, 50);
+                }
+                else if (EpicBattleAIPhase1Active && !EpicBattleAIPhase1Completed)
+                {
+                    // Check if the Enemy Main Formation has reached Phase 1 destination
+                    float xDelta = EnemyMainFormation.CurrentPosition.x - EpicBattleAIPhase1DestinationPos.X;
+                    float yDelta = EnemyMainFormation.CurrentPosition.y - EpicBattleAIPhase1DestinationPos.Y;
+                    if (xDelta > -20 && xDelta < 20 && yDelta > -20 && yDelta < 20)
                     {
-                        // Display Message
-                        if (!EpicBattleAIIsRetreating)
-                        {
-                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Retreating!"));
-                            MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
+                        EpicBattleAIPhase1Completed = true;
+                        // Delay Phase 2
+                        EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase2Seconds, EpicBattleAIDelayPhase2Seconds + 15));
+                        //Debug Message
+                        InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
+                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
+                    }
+                }
+                // PHASE 2 - Delay
+                else if (EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && EpicBattleAIPhase2DelayTime.IsPast)
+                {
+                    EpicBattleAIPhase1Active = false;
+                }
+                // PHASE 2
+                // - Advance enemy/ally Ranged (II). Return HorseArcher (IV) units back to native AI
+                else if (!EpicBattleAIPhase1Active && EpicBattleAIPhase1Completed && !EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
+                {
+                    EpicBattleAIPhase2Active = true;
+                    // Ally Teams First for reference (in-case player isn't general)
+                    FormationsAdvanceYPaces(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
+                    ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.HorseArcher));
+                    // Enemy Teams
+                    FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged), Phase2DestinationOffsetDistance);
+                    ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.HorseArcher));
 
-                            foreach (Agent agent in EnemyMainFormation.Team.TeamAgents)
-                            {
-                                agent.Retreat();
-                            }
+                    //Debug Message
+                    InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
+                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
+                }
+                else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
+                {
+                    EpicBattleAIPhase2Completed = true;
+                    // Delay Phase 3
+                    EpicBattleAIPhase3DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase3Seconds, EpicBattleAIDelayPhase3Seconds + 60));
+                }
+                // PHASE 3 - Delay
+                else if (EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && EpicBattleAIPhase3DelayTime.IsPast)
+                {
+                    EpicBattleAIPhase2Active = false;
+                }
+                // PHASE 3
+                // - Advance attacker Infantry (I). Return Enemy/Ally Cavalry units back to native AI
+                else if (!EpicBattleAIPhase2Active && EpicBattleAIPhase2Completed && !EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
+                {
+                    EpicBattleAIPhase3Active = true;
 
-                            EpicBattleAIIsRetreating = true;
-                        }
+                    if (PlayerBattleSideEnum == BattleSideEnum.Defender)
+                    {
+                        // Attacking Teams
+                        Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(EnemyMainFormation, PlayerMainFormation) * 0.75f;
+                        FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
+                        ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
+
+                        // Defending Teams
+                        ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.Cavalry));
                     }
                     else
                     {
-                        // Display Message
-                        if (!EpicBattleAIIsFightingOn)
-                        {
-                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Fighting On!"));
-                            MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
-                            EpicBattleAIIsFightingOn = true;
-                            ReturnAllEnemyFormationsToAI(__instance);
-                        }
+                        // Attacking Teams
+                        Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(EnemyMainFormation, PlayerMainFormation) * 0.75f;
+                        FormationsAdvanceYPaces(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
+                        ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.Cavalry));
+
+                        // Defending Teams
+                        ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
                     }
 
-                    //Ally Teams
-                    if (!EpicBattleAIAllyMoveAtWill)
+                    Settings.Instance.AllEnemyAllyAgentsWalk = true;
+
+                    // Debug Message
+                    InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
+                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
+                }
+                else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
+                {
+                    EpicBattleAIPhase3Completed = true;
+                    // Delay Phase 4
+                    EpicBattleAIPhase4DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase4Seconds, EpicBattleAIDelayPhase4Seconds + 20));
+                }
+                // PHASE 4 - Delay
+                else if (EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && EpicBattleAIPhase4DelayTime.IsPast)
+                {
+                    EpicBattleAIPhase3Active = false;
+                }
+                // PHASE 4 - Charge attacker Infantry (I). 
+                // - Return Defender Ranged (II) to AI
+                else if (!EpicBattleAIPhase3Active && EpicBattleAIPhase3Completed && !EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
+                {
+                    EpicBattleAIPhase4Active = true;
+
+                    if (PlayerBattleSideEnum == BattleSideEnum.Defender)
                     {
-                        ReturnAllAllyFormationsToAI(__instance);
+                        // Attacker Team - Enemy
+                        foreach (Formation formation in GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry))
+                        {
+                            formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
+                            formation.AI.EnsureBehavior<BehaviorCharge>();
+                            formation.MovementOrder = MovementOrder.MovementOrderCharge;
+                        }
+
+                        // Defender Team - Ally
+                        FormationsAdvanceYPaces(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Ranged), -Phase2DestinationOffsetDistance);
+                        //ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.Ranged));
+                    }
+                    else
+                    {
+                        // Attacker Team - Ally
                         foreach (Formation formation in GetAllAllyFormationsOfType(__instance, FormationClass.Infantry))
                         {
                             formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
                             formation.AI.EnsureBehavior<BehaviorCharge>();
-                            formation.IsAIControlled = false;
                             formation.MovementOrder = MovementOrder.MovementOrderCharge;
                         }
-                        InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - All Ally units Move at will!"));
-                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), AllyMainFormation.Team.GeneralAgent.Position);
-                        EpicBattleAIAllyMoveAtWill = true;
+
+                        // Defender Team - Enemy
+                        FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged), -Phase2DestinationOffsetDistance);
+                        //ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.Ranged));
                     }
+
+                    Settings.Instance.AllEnemyAllyAgentsWalk = false;
+
+                    // Debug Message
+                    InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 4 - Infantry/Cavalry Charge!"));
+                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
+                }
+                else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
+                {
+                    EpicBattleAIPhase4Completed = true;
+
+                    // Delay Phase 5
+                    EpicBattleAIPhase5DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase5Seconds, EpicBattleAIDelayPhase5Seconds + 10));
+                }
+                // PHASE 5 - Delay
+                else if (EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && EpicBattleAIPhase5DelayTime.IsPast)
+                {
+                    EpicBattleAIPhase4Active = false;
+                }
+                // PHASE 5 
+                // - Assess enemy casualties and whether to flee if casualties are too heavy (Random chance 2:1). 
+                // - Ally Infantry Charge
+                else if (!EpicBattleAIPhase4Active && EpicBattleAIPhase4Completed && !EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
+                {
+                    EpicBattleAIPhase5Active = true;
+
+                    // Decide if they should flee after sustaining heavy casualties
+                    EpicBattleAIFlee = _helpersInstance.GetRandomInt(0, 4) == 0 ? false : true;
+
+                    // Debug Message
+                    InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Assessing Casualties"));
+                }
+                else if (EpicBattleAIPhase5Active && !EpicBattleAIPhase5Completed)
+                {
+                    if (EnemyMainFormation?.QuerySystem.CasualtyRatio < 0.35)
+                    {
+                        // Current enemy side's OveralPowerRatio
+                        float enemyOverallPowerRatio = 0;
+                        foreach (Team team in GetAllEnemyTeams(__instance, PlayerBattleSideEnum))
+                        {
+                            enemyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
+                        }
+
+                        // Current friendly side's OveralPowerRatio
+                        float friendlyOverallPowerRatio = 0;
+                        foreach (Team team in GetAllFriendlyTeams(__instance, PlayerBattleSideEnum))
+                        {
+                            friendlyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
+                        }
+
+                        // Enemy Teams
+                        if (EpicBattleAIFlee && enemyOverallPowerRatio < friendlyOverallPowerRatio)
+                        {
+                            // Display Message
+                            if (!EpicBattleAIIsRetreating)
+                            {
+                                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Retreating!"));
+                                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
+
+                                foreach (Agent agent in EnemyMainFormation.Team.ActiveAgents)
+                                {
+                                    agent.Retreat();
+                                }
+
+                                EpicBattleAIIsRetreating = true;
+                            }
+                        }
+                        else
+                        {
+                            // Display Message
+                            if (!EpicBattleAIIsFightingOn)
+                            {
+                                InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Fighting On!"));
+                                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
+                                EpicBattleAIIsFightingOn = true;
+                                ReturnAllEnemyFormationsToAI(__instance);
+                            }
+                        }
+
+                        //Ally Teams
+                        if (!EpicBattleAIAllyMoveAtWill)
+                        {
+                            ReturnAllAllyFormationsToAI(__instance);
+                            foreach (Formation formation in GetAllAllyFormationsOfType(__instance, FormationClass.Infantry))
+                            {
+                                formation.AI.SetBehaviorWeight<BehaviorCharge>(100f);
+                                formation.AI.EnsureBehavior<BehaviorCharge>();
+                                formation.IsAIControlled = false;
+                                formation.MovementOrder = MovementOrder.MovementOrderCharge;
+                            }
+                            InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - All Ally units Move at will!"));
+                            MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), AllyMainFormation.Team.GeneralAgent.Position);
+                            EpicBattleAIAllyMoveAtWill = true;
+                        }
                         
 
-                    //EpicBattleAIPhase5Completed = true;
+                        //EpicBattleAIPhase5Completed = true;
 
-                    // Deactivate EpicBattleAI
-                    // EpicBattleAIActive = false;
+                        // Deactivate EpicBattleAI
+                        // EpicBattleAIActive = false;
+                    }
                 }
+            } 
+            catch(Exception ex)
+            {
+                ReturnAllAllyFormationsToAI(__instance);
+                ReturnAllEnemyFormationsToAI(__instance);
+                Settings.Instance.AllEnemyAllyAgentsWalk = false;
+                EpicBattleAIActive = false;
+                EpicBattleAIBoolReset();
+                InformationManager.DisplayMessage(new InformationMessage("EpicBattleAI Error - Reverting to Native AI"));
+                InformationManager.DisplayMessage(new InformationMessage(ex.Message));
             }
         }
 
@@ -2493,7 +2542,32 @@ namespace ArmyFormationsMadeEasy.Patches
             List<Formation> formations = new List<Formation>();
 
             List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent.Team.Side && t != __instance.MainAgent.Team
+                                where t.Side == __instance.MainAgent?.Team.Side && t != __instance.MainAgent.Team
+                                select t).ToList();
+            if (teams != null && teams.Count > 0)
+            {
+                foreach (var team in teams)
+                {
+                    foreach (Formation formation in team.FormationsIncludingSpecial)
+                    {
+                        if (formation.FormationIndex == formationClass)
+                        {
+                            formations.Add(formation);
+                        }
+                    }
+                }
+            }
+
+            return formations;
+        }
+
+        // Get all friendly formations of given type (includes player team)
+        private static List<Formation> GetAllFriendlyFormationsOfType(Mission __instance, FormationClass formationClass)
+        {
+            List<Formation> formations = new List<Formation>();
+
+            List<Team> teams = (from t in __instance.Teams
+                                where t.Side == __instance.MainAgent?.Team.Side
                                 select t).ToList();
             if (teams != null && teams.Count > 0)
             {
