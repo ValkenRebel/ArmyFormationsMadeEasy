@@ -1876,7 +1876,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     if (PlayerBattleSideEnum == BattleSideEnum.Defender)
                     {
                         // Attacking Teams
-                        Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(EnemyMainFormation, PlayerMainFormation) * 0.75f;
+                        Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(EnemyMainFormation, PlayerMainFormation) * 0.65f;
                         FormationsAdvanceYPaces(__instance, GetAllEnemyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
                         ReturnFormationsToAI(GetAllEnemyFormationsOfType(__instance, FormationClass.Cavalry));
 
@@ -1886,7 +1886,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     else
                     {
                         // Attacking Teams
-                        Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(EnemyMainFormation, PlayerMainFormation) * 0.75f;
+                        Phase3DestinationOffsetDistance = (float)GetXYDistanceBetweenFormations(EnemyMainFormation, PlayerMainFormation) * 0.65f;
                         FormationsAdvanceYPaces(__instance, GetAllAllyFormationsOfType(__instance, FormationClass.Infantry), Phase3DestinationOffsetDistance);
                         ReturnFormationsToAI(GetAllAllyFormationsOfType(__instance, FormationClass.Cavalry));
 
