@@ -268,8 +268,9 @@ namespace ArmyFormationsMadeEasy.Patches
                 EpicBattleAIActive = false;
                 EpicBattleAIBoolReset();
                 EpicBattleMessageDisplayed = false;
+                Settings.Instance.AllEnemyAllyAgentsWalk = false;
             }
-            else if (__instance.TimeSpeedTimerElapsedTime >= 0.1 && (__instance.AttackerTeam.QuerySystem.TeamPower <= 0 || __instance.DefenderTeam.QuerySystem.TeamPower <= 0))
+            else if (__instance.AttackerTeam != null && __instance.TimeSpeedTimerElapsedTime >= 0.1 && (__instance.AttackerTeam.QuerySystem.TeamPower <= 0 || __instance.DefenderTeam.QuerySystem.TeamPower <= 0))
             {
                 // Deactivate and Reset Epic Battle AI at end of each battle
                 EpicBattleAIActive = false;
@@ -278,11 +279,11 @@ namespace ArmyFormationsMadeEasy.Patches
                 EpicBattleAIBoolReset();
                 EpicBattleMessageDisplayed = false;
             }
-            else if (Settings.Instance.AllowEpicBattleAI && EpicBattleAIActive)
+            else if (__instance.AttackerTeam != null && Settings.Instance.AllowEpicBattleAI && EpicBattleAIActive)
             {
                 EpicBattleAITick(__instance);
             }
-            else if (Settings.Instance.AllowEpicBattleAI && !EpicBattleAIActive)
+            else if (__instance.AttackerTeam != null && Settings.Instance.AllowEpicBattleAI && !EpicBattleAIActive)
             {
                 EpicBattleAIBoolReset();
             }
