@@ -99,7 +99,7 @@ namespace ArmyFormationsMadeEasy.Patches
         // Patched 'Mission.OnTick()' (Postfix)
         static void Postfix(Mission __instance)
         {
-            if (__instance == null || __instance.CurrentState == Mission.State.EndingNextFrame || __instance.CurrentState == Mission.State.Over)
+            if (__instance == null || __instance.CurrentState == Mission.State.EndingNextFrame || __instance.CurrentState == Mission.State.Over || !__instance.IsFieldBattle)
             {
                 EpicBattleAIActive = false;
                 EpicBattleAIBoolReset();
@@ -289,7 +289,7 @@ namespace ArmyFormationsMadeEasy.Patches
             }
 
             // Display Epic Battle AI Message
-            if (__instance.TimeSpeedTimerElapsedTime >= 10 && __instance.TimeSpeedTimerElapsedTime <= 10.2 && !EpicBattleMessageDisplayed && !EpicBattleAIActive)
+            if (__instance.AttackerTeam != null && __instance.TimeSpeedTimerElapsedTime >= 10 && __instance.TimeSpeedTimerElapsedTime <= 10.2 && !EpicBattleMessageDisplayed && !EpicBattleAIActive)
             {
                 InformationManager.DisplayMessage(new InformationMessage("TIP: Press 'PageUp' - to enable 'Epic Battle AI' for Enemy/Allies."));
                 EpicBattleMessageDisplayed = true;

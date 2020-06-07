@@ -17,7 +17,7 @@ namespace ArmyFormationsMadeEasy.Patches
     {
         static void Postfix(Agent agent)
         {
-            if (agent == null || agent.State != AgentState.Active || agent.IsRetreating() || agent.Mission.CurrentState != Mission.State.Continuing)
+            if (agent == null || agent.State != AgentState.Active || agent.IsRetreating() || agent.Mission.CurrentState != Mission.State.Continuing || !agent.Mission.IsFieldBattle)
                 return;
 
             if (Settings.Instance.AllEnemyAllyAgentsWalk && agent.Team != agent.Mission.MainAgent?.Team)
