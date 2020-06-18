@@ -32,12 +32,12 @@ namespace ArmyFormationsMadeEasy.CampaignBehaviors
 
             protected override void DefineEnumTypes()
             {
-                AddEnumDefinition(typeof (FormationClass), 56345727);
+                AddEnumDefinition(typeof(FormationClass), 56345727);
             }
 
             protected override void DefineContainerDefinitions()
             {
-                ConstructContainerDefinition(typeof (Dictionary<BasicCharacterObject, FormationClass>));
+                ConstructContainerDefinition(typeof(Dictionary<BasicCharacterObject, FormationClass>));
             }
         }
     }
