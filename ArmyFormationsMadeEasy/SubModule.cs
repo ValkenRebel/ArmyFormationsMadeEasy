@@ -1,5 +1,4 @@
-﻿using ArmyFormationsMadeEasy.CampaignBehaviors;
-using HarmonyLib;
+﻿using HarmonyLib;
 using ModLib;
 using System;
 using System.Windows.Forms;
@@ -34,29 +33,9 @@ namespace ArmyFormationsMadeEasy
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
-            try
-            {
-                base.OnGameStart(game, gameStarterObject);
-                if (!(game.GameType is Campaign))
-                    return;
-                this.AddBehaviors(gameStarterObject as CampaignGameStarter);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error Adding Behaviours - Army Formations Made Easy:\n\n{ex.ToStringFull()}");
-            }
-
             // AddModels(gameStarterObject as CampaignGameStarter);
         }
-
-        private void AddBehaviors(CampaignGameStarter gameStarterObject)
-        {
-            if (gameStarterObject == null)
-                return;
-            gameStarterObject.AddBehavior(SavedFormationClassesBehavior.Instance);
-            gameStarterObject.LoadGameTexts(BasePath.Name + "Modules/ArmyFormationsMadeEasy/ModuleData/module_strings.xml");
-        }
-
+        
         private void AddModels(CampaignGameStarter gameStarter)
         {
             if (gameStarter != null)
