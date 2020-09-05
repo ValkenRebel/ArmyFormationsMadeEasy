@@ -2365,7 +2365,7 @@ namespace ArmyFormationsMadeEasy.Patches
                         else
                         {
                             // Set the main formation to act as leader of Enemy Army Formation
-                            // Priorities all FormationIndexes in order, except Ranged & Cavalry.
+                            // Prioritise all FormationIndexes in order, except Ranged & Cavalry.
                             foreach (Formation formation in team.FormationsIncludingSpecial)
                             {
                                 if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
