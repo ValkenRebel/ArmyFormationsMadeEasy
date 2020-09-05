@@ -1457,7 +1457,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 {
                     newWorldPos = CalcWorldPosRelToFormation(formation, __instance, 0, distance);
                     // Mark this formation's FrontAttachmentPoint as having been updated for the first time, if on player's team
-                    if (formation.Team.Side == __instance.MainAgent.Team.Side) 
+                    if (formation.Team.Side == PlayerBattleSideEnum) 
                         FormationFrontAttPtUpdated[(int)formation.FormationIndex] = true;
                 }
                 formation.MovementOrder = MovementOrder.MovementOrderMove(newWorldPos);
@@ -1554,9 +1554,7 @@ namespace ArmyFormationsMadeEasy.Patches
         {
             MBReadOnlyList<Formation> SelectedFormationsList = __instance.PlayerTeam.PlayerOrderController.SelectedFormations;
 
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent.Team.Side
-                                select t).ToList();
+            List<Team> teams = GetAllFriendlyTeams(__instance);
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
@@ -1854,7 +1852,8 @@ namespace ArmyFormationsMadeEasy.Patches
                         EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase2Seconds, EpicBattleAIDelayPhase2Seconds + 15));
                         //Debug Message
                         InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
-                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
+                        if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                            MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
                     }
                 }
                 // PHASE 2 - Delay
@@ -1876,7 +1875,8 @@ namespace ArmyFormationsMadeEasy.Patches
 
                     //Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
-                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
+                    if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
                 else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
                 {
@@ -1924,7 +1924,8 @@ namespace ArmyFormationsMadeEasy.Patches
 
                     // Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
-                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
+                    if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
                 else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
                 {
@@ -1976,7 +1977,8 @@ namespace ArmyFormationsMadeEasy.Patches
 
                     // Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 4 - Infantry Charge!"));
-                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
+                    if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                        MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
                 else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
                 {
@@ -2009,14 +2011,14 @@ namespace ArmyFormationsMadeEasy.Patches
                     {
                         // Current enemy side's OveralPowerRatio
                         float enemyOverallPowerRatio = 0;
-                        foreach (Team team in GetAllEnemyTeams(__instance, PlayerBattleSideEnum))
+                        foreach (Team team in GetAllEnemyTeams(__instance))
                         {
                             enemyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
                         }
 
                         // Current friendly side's OveralPowerRatio
                         float friendlyOverallPowerRatio = 0;
-                        foreach (Team team in GetAllFriendlyTeams(__instance, PlayerBattleSideEnum))
+                        foreach (Team team in GetAllFriendlyTeams(__instance))
                         {
                             friendlyOverallPowerRatio += team.QuerySystem.OverallPowerRatio;
                         }
@@ -2028,7 +2030,8 @@ namespace ArmyFormationsMadeEasy.Patches
                             if (!EpicBattleAIIsRetreating)
                             {
                                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Retreating!"));
-                                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
+                                if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
 
                                 foreach (Agent agent in EnemyMainFormation.Team.ActiveAgents)
                                 {
@@ -2044,7 +2047,9 @@ namespace ArmyFormationsMadeEasy.Patches
                             if (!EpicBattleAIIsFightingOn)
                             {
                                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Fighting On!"));
-                                MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
+                                if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                                    MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
+
                                 EpicBattleAIIsFightingOn = true;
                                 ReturnAllEnemyFormationsToAI(__instance);
                             }
@@ -2063,7 +2068,7 @@ namespace ArmyFormationsMadeEasy.Patches
                             }
                             InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - All Ally units Move at will!"));
 
-                            if (AllyMainFormation?.Team?.GeneralAgent != null)
+                            if (AllyMainFormation?.Team?.GeneralAgent?.Position != null)
                                 MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), AllyMainFormation.Team.GeneralAgent.Position);
 
                             EpicBattleAIAllyMoveAtWill = true;
@@ -2085,7 +2090,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 EpicBattleAIActive = false;
                 EpicBattleAIBoolReset();
                 InformationManager.DisplayMessage(new InformationMessage("EpicBattleAI Error - Reverting to Native AI"));
-                MessageBox.Show($"Error: Army Formations Made Easy - EpicBattleAITick:\n\n{ex.ToStringFull()}");
+                MessageBox.Show($"Error: Army Formations Made Easy - EpicBattleAITick:\n\n{ex.ToStringFull()} \n\n{ex.StackTrace.ToString()} \n\n{ex.InnerException.ToString()}");
             }
         }
 
@@ -2119,19 +2124,28 @@ namespace ArmyFormationsMadeEasy.Patches
         }
 
         // Get All Enemy Teams
-        private static List<Team> GetAllEnemyTeams(Mission __instance, BattleSideEnum playerBattleSideEnum)
+        private static List<Team> GetAllEnemyTeams(Mission __instance)
         {
             List<Team> teams = (from t in __instance.Teams
-                                where t.Side != playerBattleSideEnum
+                                where t.Side != PlayerBattleSideEnum
                                 select t).ToList();
             return teams;
         }
 
         // Get All Friendly Teams including Player's team (MainAgent)
-        private static List<Team> GetAllFriendlyTeams(Mission __instance, BattleSideEnum playerBattleSideEnum)
+        private static List<Team> GetAllFriendlyTeams(Mission __instance)
         {
             List<Team> teams = (from t in __instance.Teams
-                                where t.Side == playerBattleSideEnum
+                                where t.Side == PlayerBattleSideEnum
+                                select t).ToList();
+            return teams;
+        }
+
+        // Get All Friendly Teams excluding Player's team (MainAgent)
+        private static List<Team> GetAlliedTeams(Mission __instance)
+        {
+            List<Team> teams = (from t in __instance.Teams
+                                where t.Side == PlayerBattleSideEnum && t != __instance.MainAgent?.Team
                                 select t).ToList();
             return teams;
         }
@@ -2149,9 +2163,7 @@ namespace ArmyFormationsMadeEasy.Patches
         // Return All Enemy Formations back to AI
         private static void ReturnAllEnemyFormationsToAI(Mission __instance)
         {
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side != __instance.MainAgent?.Team.Side
-                                select t).ToList();
+            List<Team> teams = GetAllEnemyTeams(__instance);
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
@@ -2164,9 +2176,7 @@ namespace ArmyFormationsMadeEasy.Patches
         // Return All Ally Formations back to AI
         private static void ReturnAllAllyFormationsToAI(Mission __instance)
         {
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent?.Team.Side && t != __instance.MainAgent?.Team
-                                select t).ToList();
+            List<Team> teams = GetAlliedTeams(__instance);
 
             if (teams.Count == 0 && __instance.MainAgent != null && !__instance.MainAgent.Team.IsPlayerGeneral)
             {
@@ -2187,7 +2197,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Get the MainAgent's main formation to act as target of the Army Formation
                 PlayerMainFormation = null;
                 // Priorities all FormationIndexes in order, except Ranged & Cavalry.
-                foreach (Formation formation in __instance.MainAgent.Team.Formations)
+                foreach (Formation formation in __instance.MainAgent?.Team.Formations)
                 {
                     if (formation.FormationIndex != FormationClass.Ranged && formation.FormationIndex != FormationClass.Cavalry)
                     {
@@ -2198,7 +2208,7 @@ namespace ArmyFormationsMadeEasy.Patches
                 // Priorities Ranged, then Cavalry last.
                 if (PlayerMainFormation == null)
                 {
-                    foreach (Formation formation in __instance.MainAgent.Team.Formations)
+                    foreach (Formation formation in __instance.MainAgent?.Team.Formations)
                     {
                         PlayerMainFormation = formation;
                         break;
@@ -2211,7 +2221,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     foreach (var team in teams)
                     {
                         // Ally Teams
-                        if (team.Side == __instance.MainAgent.Team.Side)
+                        if (team.Side == PlayerBattleSideEnum)
                         {
                             // Set the main formation to act as leader of Ally Army Formation
                             // Priorities all FormationIndexes in order, except Ranged & Cavalry.
@@ -2531,9 +2541,7 @@ namespace ArmyFormationsMadeEasy.Patches
         // Move Enemy Formations to Custom Army Formation positions offset from the Players Team
         private static void MoveAllEnemyToPlayerTeamOffset(Mission __instance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset)
         {
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side != __instance.MainAgent?.Team.Side
-                                select t).ToList();
+            List<Team> teams = GetAllEnemyTeams(__instance);
 
             MoveTeamsToPlayerTeamOffset(__instance, customArmyFormation, extraLatOffset, extraFwdOffset, teams);
         }
@@ -2541,9 +2549,7 @@ namespace ArmyFormationsMadeEasy.Patches
         // Move Ally Formations to Custom Army Formation positions offset from the Players Team
         private static void MoveAllAllyToPlayerTeamOffset(Mission __instance, CustomArmyFormation customArmyFormation, float extraLatOffset, float extraFwdOffset)
         {
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent?.Team.Side && t != __instance.MainAgent?.Team
-                                select t).ToList();
+            List<Team> teams = GetAlliedTeams(__instance);
 
             if (teams.Count == 0 && __instance.MainAgent != null && !__instance.MainAgent.Team.IsPlayerGeneral)
             {
@@ -2558,9 +2564,7 @@ namespace ArmyFormationsMadeEasy.Patches
         {
             List<Formation> formations = new List<Formation>();
 
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side != __instance.MainAgent.Team.Side
-                                select t).ToList();
+            List<Team> teams = GetAllEnemyTeams(__instance);
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
@@ -2583,9 +2587,7 @@ namespace ArmyFormationsMadeEasy.Patches
         {
             List<Formation> formations = new List<Formation>();
 
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent?.Team.Side && t != __instance.MainAgent.Team
-                                select t).ToList();
+            List<Team> teams = GetAlliedTeams(__instance);
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
@@ -2608,9 +2610,7 @@ namespace ArmyFormationsMadeEasy.Patches
         {
             List<Formation> formations = new List<Formation>();
 
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent?.Team.Side
-                                select t).ToList();
+            List<Team> teams = GetAllFriendlyTeams(__instance);
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
@@ -2660,9 +2660,8 @@ namespace ArmyFormationsMadeEasy.Patches
         // (deprecated) Move all units to the given Custom Army Formation positions
         private static void MoveAllToCustArmyFormPos(CustomArmyFormation customArmyFormation, Mission __instance)
         {
-            List<Team> teams = (from t in __instance.Teams
-                                where t.Side == __instance.MainAgent.Team.Side
-                                select t).ToList();
+            List<Team> teams = GetAllFriendlyTeams(__instance);
+
             if (teams != null && teams.Count > 0)
             {
                 foreach (var team in teams)
