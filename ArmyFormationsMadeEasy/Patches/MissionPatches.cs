@@ -1852,7 +1852,7 @@ namespace ArmyFormationsMadeEasy.Patches
                         EpicBattleAIPhase2DelayTime = MissionTime.SecondsFromNow((float)_helpersInstance.GetRandomDouble(EpicBattleAIDelayPhase2Seconds, EpicBattleAIDelayPhase2Seconds + 15));
                         //Debug Message
                         InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 1 - Destination Reached"));
-                        if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                        if (EnemyMainFormation?.Team?.GeneralAgent?.Position != null)
                             MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
                     }
                 }
@@ -1875,7 +1875,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
                     //Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 2 - Ranged Advance!"));
-                    if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                    if (EnemyMainFormation?.Team?.GeneralAgent?.Position != null)
                         MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
                 else if (EpicBattleAIPhase2Active && !EpicBattleAIPhase2Completed)
@@ -1924,7 +1924,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
                     // Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 3 - Infantry/Cavalry Advance!"));
-                    if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                    if (EnemyMainFormation?.Team?.GeneralAgent?.Position != null)
                         MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/move"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
                 else if (EpicBattleAIPhase3Active && !EpicBattleAIPhase3Completed)
@@ -1977,7 +1977,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
                     // Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 4 - Infantry Charge!"));
-                    if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                    if (EnemyMainFormation?.Team?.GeneralAgent?.Position != null)
                         MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
                 }
                 else if (EpicBattleAIPhase4Active && !EpicBattleAIPhase4Completed)
@@ -2030,7 +2030,7 @@ namespace ArmyFormationsMadeEasy.Patches
                             if (!EpicBattleAIIsRetreating)
                             {
                                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Retreating!"));
-                                if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                                if (EnemyMainFormation?.Team?.GeneralAgent?.Position != null)
                                     MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/retreat"), EnemyMainFormation.Team.GeneralAgent.Position);
 
                                 foreach (Agent agent in EnemyMainFormation.Team.ActiveAgents)
@@ -2047,7 +2047,7 @@ namespace ArmyFormationsMadeEasy.Patches
                             if (!EpicBattleAIIsFightingOn)
                             {
                                 InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Heavy Casualties - Enemy Fighting On!"));
-                                if (EnemyMainFormation.Team.GeneralAgent.Position != null)
+                                if (EnemyMainFormation?.Team?.GeneralAgent?.Position != null)
                                     MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/mission/horns/attack"), EnemyMainFormation.Team.GeneralAgent.Position);
 
                                 EpicBattleAIIsFightingOn = true;
