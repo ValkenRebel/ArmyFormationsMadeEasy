@@ -51,7 +51,7 @@ namespace ArmyFormationsMadeEasy.Patches
 
         public static float TimeBetweenTips { get; set; } = 30f;
         public static MissionTime TipsDelayTime;
-        public static bool[] DisplayedTips = new bool[37];
+        public static bool[] DisplayedTips = new bool[40];
         
 
         #region Epic Battle AI
@@ -1349,37 +1349,37 @@ namespace ArmyFormationsMadeEasy.Patches
             switch (randomIndex)
             {
                 case 0:
-                    tipStr = "Tip: Press 'F11' to move selected units to 'Custom Army Formation 1'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation1Key + "' to move selected units to 'Custom Army Formation 1'";
                     break;
                 case 1:
-                    tipStr = "Tip: Press 'F12' to move selected units to 'Custom Army Formation 2'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation2Key + "' to move selected units to 'Custom Army Formation 2'";
                     break;
                 case 2:
-                    tipStr = "Tip: Press 'NunPad5' to move selected units to 'Custom Army Formation 3'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation3Key + "' to move selected units to 'Custom Army Formation 3'";
                     break;
                 case 3:
-                    tipStr = "Tip: Press 'NunPad6' to move selected units to 'Custom Army Formation 4'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation4Key + "' to move selected units to 'Custom Army Formation 4'";
                     break;
                 case 4:
-                    tipStr = "Tip: Press 'NunPad7' to move selected units to 'Custom Army Formation 5'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation5Key + "' to move selected units to 'Custom Army Formation 5'";
                     break;
                 case 5:
-                    tipStr = "Tip: Press 'NunPad8' to move selected units to 'Custom Army Formation 6'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation6Key + "' to move selected units to 'Custom Army Formation 6'";
                     break;
                 case 6:
-                    tipStr = "Tip: Press 'NunPad9' to move selected units to 'Custom Army Formation 7'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation7Key + "' to move selected units to 'Custom Army Formation 7'";
                     break;
                 case 7:
-                    tipStr = "Tip: Press 'NunPad0' to move selected units to 'Custom Army Formation 8'";
+                    tipStr = "Tip: Press '" + Config.CustomFormation8Key + "' to move selected units to 'Custom Army Formation 8'";
                     break;
                 case 8:
-                    tipStr = "Tip: Press 'F9' to move selected units forward X paces. (X value can be changed in 'Mod Options')";
+                    tipStr = "Tip: Press '" + Config.AdvanceSelectedKey + "' to move selected units forward X paces. (X value can be changed in 'Mod Options')";
                     break;
                 case 9:
-                    tipStr = "Tip: Press 'F10' to move selected units backwards X paces. (X value can be changed in 'Mod Options')";
+                    tipStr = "Tip: Press '" + Config.FallbackSelectedKey + "' to move selected units backwards X paces. (X value can be changed in 'Mod Options')";
                     break;
                 case 10:
-                    tipStr = "Tip: Press '[CustomFormationKey] + F9' to move selected units forward X paces, while maintaining army formation.";
+                    tipStr = "Tip: Press '[CustomFormationKey] + " + Config.AdvanceSelectedKey + "' to move selected units forward X paces, while maintaining army formation.";
                     break;
                 case 11:
                 case 12:
@@ -1390,7 +1390,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     tipStr = "Tip: Press 'F2' then 'F2' to make selected units turn to face the nearest threat.";
                     break;
                 case 15:
-                    tipStr = "Tip: Press 'F2' then 'Click Direction' then 'F9' to make selected units advance, while maintaining direction facing/spacing.";
+                    tipStr = "Tip: Press 'F2' then 'Click Direction' then '" + Config.AdvanceSelectedKey + "' to make selected units advance, while maintaining direction facing/spacing.";
                     break;
                 case 16:
                     tipStr = "Tip: Start battle using a 'Custom Army Formation' that has Ranged(II) units at the front.";
@@ -1402,21 +1402,21 @@ namespace ArmyFormationsMadeEasy.Patches
                     tipStr = "Tip: Infantry (I) act as the center of the formation. If no Infantry, it reverts in order (IV, V, VI, VII, VIII, II, III)";
                     break;
                 case 19:
-                    tipStr = "Tip: Press 'Minus(-)' to force selected units to 'Slow March'.";
+                    tipStr = "Tip: Press '" + Config.ReduceUnitSpeedLimitKey + "' to force selected units to 'Slow March'.";
                     break;
                 case 20:
-                    tipStr = "Tip: Press 'Equals(=)' to reset selected units to 'Quick March' speeds.";
+                    tipStr = "Tip: Press '" + Config.ResetUnitSpeedLimitKey + "' to reset selected units to 'Quick March' speeds.";
                     break;
                 case 21:
-                    tipStr = "Tip: Press 'Ctrl + Minus(-)' to force enemy and allied units to 'Slow March'.";
+                    tipStr = "Tip: Press 'Ctrl + " + Config.ReduceUnitSpeedLimitKey + "' to force enemy and allied units to 'Slow March'.";
                     break;
                 case 22:
-                    tipStr = "Tip: Press 'Ctrl + Equals(=)' to reset enemy and allied units to 'Quick March' speeds.";
+                    tipStr = "Tip: Press 'Ctrl + " + Config.ResetUnitSpeedLimitKey + "' to reset enemy and allied units to 'Quick March' speeds.";
                     break;
                 case 23:
                 case 24:
                 case 25:
-                    tipStr = "Tip: Press 'PageUp' to toggle Epic Battle AI on/off. Enemy and Allied units form up opposite each other and then use a 'Phased Battle Plan'.";
+                    tipStr = "Tip: Press '" + Config.EpicBattlesAIToggleKey + "' to toggle Epic Battle AI on/off. Enemy and Allied units form up opposite each other and then use a 'Phased Battle Plan'.";
                     break;
                 case 26:
                 case 27:
@@ -1424,7 +1424,7 @@ namespace ArmyFormationsMadeEasy.Patches
                     break;
                 case 28:
                 case 29:
-                    tipStr = "Tip: Saving formations in battle are temporary (until game restarts). To make permanent go to 'Mod Options' menu. Click 'Done' - so that game prompts you to restart.";
+                    tipStr = "Tip: Saving formations in battle are temporary (until game restarts). To make permanent go to 'Mod Options' menu. Click 'Done'";
                     break;
                 case 30:
                     tipStr = "Tip: Remember to show your support and 'ENDORSE' the mods that you enjoy - so that others may find them too.";
@@ -1432,8 +1432,17 @@ namespace ArmyFormationsMadeEasy.Patches
                 case 31:
                     tipStr = "Tip: You can modify key-bindings by editing: /ModuleData/ArmyFormationsMadeEasyConfig.xml";
                     break;
+                case 32:
+                case 33:
+                    tipStr = "Tip: Install ModLib + MCMv3.1.9 to access 'Mod Options' in battle. Allows you to save formations permanently mid battle.";
+                    break;
+                case 34:
+                case 35:
+                case 36:
+                    tipStr = "Tip: Press 'T' to view previous Tips.";
+                    break;
                 default:
-                    tipStr = "Tip: Press 'Ctrl + [CustomFormationKey]' to save army's current positions. Go to 'Mod Options' after battle to make changes permanent.";
+                    tipStr = "Tip: Press 'Ctrl + [CustomFormationKey]' to save army's current positions. Go to 'Mod Options'. Click 'Done' to make changes permanent.";
                     break;
             }
 
@@ -2000,7 +2009,8 @@ namespace ArmyFormationsMadeEasy.Patches
                     EpicBattleAIPhase5Active = true;
 
                     // Decide if they should flee after sustaining heavy casualties
-                    EpicBattleAIFlee = _helpersInstance.GetRandomInt(0, 4) == 0 ? false : true;
+                    //EpicBattleAIFlee = _helpersInstance.GetRandomInt(0, 4) == 0 ? false : true;
+                    EpicBattleAIFlee = _helpersInstance.GetRandomInt(1, 100) <= Settings.Instance.EpicBattleAIRetreatChance ? true : false;
 
                     // Debug Message
                     InformationManager.DisplayMessage(new InformationMessage("Epic Battle AI - Phase 5 - Assessing Casualties"));

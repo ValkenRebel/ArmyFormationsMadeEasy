@@ -67,6 +67,10 @@ namespace ArmyFormationsMadeEasy
         [SettingProperty("Allow 'Epic Battles AI'", 0, 1, "(Default: press PageUp to toggle On/Off) Enemy will form up 100m in front of Player's Army and begin a 'Phased Battle Plan'")]
         [SettingPropertyGroup("Allow 'Epic Battles AI'   (Default: press PageUp)", true)]
         public bool AllowEpicBattleAI { get; set; } = true;
+        [XmlElement]
+        [SettingProperty("Enemy Retreat %", 0, 100, "% Chance of Enemy retreating after sustaining high casualties (Default: 75%)")]
+        [SettingPropertyGroup("Allow 'Epic Battles AI'   (Default: press PageUp)")]
+        public int EpicBattleAIRetreatChance { get; set; } = 75;
 
         [XmlElement]
         [SettingProperty("Enable Custom Army Formations", "Toggle Mod ON/OFF")]
